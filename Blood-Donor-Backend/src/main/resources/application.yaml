@@ -1,3 +1,25 @@
 spring:
   application:
     name: blood-donor
+  datasource:
+    url: jdbc:mysql://localhost:3306/blood_donor_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+jwt:
+  secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-key-in-production}
+  expiration-ms: 86400000
