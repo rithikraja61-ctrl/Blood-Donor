@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { ApiError } from '../../services/apiClient';
 import RoleSlider from './RoleSlider';
 import LoginButton from './LoginButton';
 import SignupPrompt from './SignupPrompt';
@@ -6,6 +9,9 @@ import SignupPrompt from './SignupPrompt';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function LoginForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [activeRole, setActiveRole] = useState('User');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +36,7 @@ function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
 
@@ -38,11 +44,21 @@ function LoginForm() {
 
     setLoading(true);
 
-    // Dummy login — no backend yet
-    setTimeout(() => {
+    try {
+      await login(activeRole, email, password);
+      navigate('/');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setLoginError('Invalid email or password.');
+      } else if (err instanceof ApiError && err.fieldErrors) {
+        setErrors(err.fieldErrors);
+        setLoginError(err.message);
+      } else {
+        setLoginError(err.message || 'Login failed. Please try again.');
+      }
+    } finally {
       setLoading(false);
-      setLoginError('Invalid email or password.');
-    }, 600);
+    }
   };
 
   return (
