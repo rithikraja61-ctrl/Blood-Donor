@@ -16,8 +16,8 @@ html {
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
-  color: var(--color-white);
-  background-color: var(--color-dark-red);
+  color: var(--landing-text);
+  background-color: var(--landing-bg);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -38,4 +38,8 @@ button {
 img {
   max-width: 100%;
   display: block;
+}
+
+ul {
+  list-style: none;
 }

@@ -1,0 +1,82 @@
+@import '../../styles/auth-form.css';
+
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #ffffff 0%, #e8f4fd 40%, #fce8ea 100%);
+  padding: 2rem 1rem;
+}
+
+.register-page__container {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  animation: registerFadeIn 0.5s ease;
+}
+
+.register-page__header {
+  text-align: center;
+}
+
+.register-page__title {
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--auth-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.register-page__subtitle {
+  font-size: 0.95rem;
+  color: var(--auth-text-secondary);
+}
+
+/* Glassmorphism card */
+.register-page__card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--auth-radius-lg);
+  box-shadow: 0 8px 32px rgba(26, 43, 60, 0.12);
+  padding: 2.25rem 2rem;
+}
+
+.register-page__login-link {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--auth-text-secondary);
+  margin-top: 0.5rem;
+}
+
+.register-page__login-link button {
+  color: var(--color-blood-red);
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.register-page__login-link button:hover {
+  color: var(--color-blood-red-dark);
+  text-decoration: underline;
+}
+
+@keyframes registerFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .register-page__card {
+    padding: 1.75rem 1.25rem;
+  }
+}

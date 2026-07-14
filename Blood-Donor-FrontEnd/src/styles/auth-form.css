@@ -1,0 +1,173 @@
+/* ── Shared Auth Form Styles ── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+  
+  .auth-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .auth-form__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--auth-text-primary);
+  }
+  
+  .auth-form__input,
+  .auth-form__select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--auth-border);
+    border-radius: var(--auth-radius-sm);
+    background: var(--auth-input-bg);
+    color: var(--auth-text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+  }
+  
+  .auth-form__input::placeholder {
+    color: var(--auth-text-muted);
+  }
+  
+  .auth-form__input:focus,
+  .auth-form__select:focus {
+    border-color: var(--color-blood-red);
+    box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.12);
+  }
+  
+  .auth-form__input--error,
+  .auth-form__select--error {
+    border-color: var(--auth-error);
+  }
+  
+  .auth-form__error {
+    font-size: 0.8rem;
+    color: var(--auth-error);
+    font-weight: 500;
+  }
+  
+  .auth-form__submit {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    margin-top: 0.25rem;
+    background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+    color: var(--color-white);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--auth-radius-sm);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 4px 14px rgba(196, 30, 58, 0.3);
+  }
+  
+  .auth-form__submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+  }
+  
+  .auth-form__submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* ── Role Selector (sliding pill tabs) ── */
+  .role-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .role-selector__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--auth-text-primary);
+    text-align: center;
+  }
+  
+  .role-selector__track {
+    position: relative;
+    display: flex;
+    background: var(--auth-slider-bg);
+    border-radius: 999px;
+    padding: 4px;
+    border: 1px solid var(--auth-border);
+    overflow: hidden;
+  }
+  
+  .role-selector__indicator {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+    border-radius: 999px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.35);
+  }
+  
+  .role-selector__btn {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    padding: 0.55rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--auth-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    white-space: nowrap;
+  }
+  
+  .role-selector__btn:hover {
+    color: var(--auth-text-primary);
+  }
+  
+  .role-selector__btn--active {
+    color: var(--color-white);
+  }
+  
+  /* ── Role-specific fields fade ── */
+  .role-fields {
+    animation: roleFieldsFade 0.35s ease;
+  }
+  
+  @keyframes roleFieldsFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  @media (max-width: 480px) {
+    .role-selector__btn {
+      font-size: 0.68rem;
+      padding: 0.5rem 0.25rem;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    .role-selector__track {
+      flex-wrap: wrap;
+      border-radius: var(--auth-radius-md);
+      padding: 6px;
+    }
+    .role-selector__indicator { display: none; }
+    .role-selector__btn {
+      flex: 1 1 45%;
+      font-size: 0.72rem;
+      border-radius: var(--auth-radius-sm);
+    }
+    .role-selector__btn--active {
+      background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+      color: var(--color-white);
+    }
+  }

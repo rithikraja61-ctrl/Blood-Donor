@@ -1,0 +1,287 @@
+/* ── Page Layout ── */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #fafafa 0%, #f0f0f0 50%, #e8e8e8 100%);
+    padding: 2rem 1rem;
+  }
+  
+  .login-page__container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    animation: loginFadeIn 0.5s ease;
+  }
+  
+  .login-page__header {
+    text-align: center;
+  }
+  
+  .login-page__title {
+    font-size: clamp(1.75rem, 5vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--auth-text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .login-page__subtitle {
+    font-size: 0.95rem;
+    color: var(--auth-text-secondary);
+    font-weight: 400;
+  }
+  
+  /* ── Auth Card ── */
+  .login-page__card {
+    width: 100%;
+    background: var(--auth-card-bg);
+    border-radius: var(--auth-radius-lg);
+    box-shadow: var(--auth-shadow);
+    padding: 2.25rem 2rem;
+    border: 1px solid var(--auth-border);
+  }
+  
+  /* ── Login Form ── */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .login-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .login-form__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--auth-text-primary);
+  }
+  
+  .login-form__input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--auth-border);
+    border-radius: var(--auth-radius-sm);
+    background: var(--auth-input-bg);
+    color: var(--auth-text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+  }
+  
+  .login-form__input::placeholder {
+    color: var(--auth-text-muted);
+  }
+  
+  .login-form__input:focus {
+    border-color: var(--color-blood-red);
+    box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.12);
+  }
+  
+  .login-form__input--error {
+    border-color: var(--auth-error);
+  }
+  
+  .login-form__error {
+    font-size: 0.8rem;
+    color: var(--auth-error);
+    font-weight: 500;
+  }
+  
+  .login-form__login-error {
+    padding: 0.75rem 1rem;
+    background: rgba(196, 30, 58, 0.08);
+    border: 1px solid rgba(196, 30, 58, 0.2);
+    border-radius: var(--auth-radius-sm);
+    color: var(--auth-error);
+    font-size: 0.875rem;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  /* ── Login Button ── */
+  .login-btn {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    margin-top: 0.25rem;
+    background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+    color: var(--color-white);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border: none;
+    border-radius: var(--auth-radius-sm);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+    box-shadow: 0 4px 14px rgba(196, 30, 58, 0.3);
+  }
+  
+  .login-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+  }
+  
+  .login-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .login-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* ── Role Slider ── */
+  .role-slider {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .role-slider__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--auth-text-primary);
+    text-align: center;
+  }
+  
+  .role-slider__track {
+    position: relative;
+    display: flex;
+    background: var(--auth-slider-bg);
+    border-radius: 999px;
+    padding: 4px;
+    border: 1px solid var(--auth-border);
+    overflow: hidden;
+  }
+  
+  .role-slider__indicator {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+    border-radius: 999px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.35);
+  }
+  
+  .role-slider__btn {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    padding: 0.55rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--auth-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    white-space: nowrap;
+  }
+  
+  .role-slider__btn:hover {
+    color: var(--auth-text-primary);
+  }
+  
+  .role-slider__btn--active {
+    color: var(--color-white);
+  }
+  
+  /* ── Sign Up Prompt ── */
+  .signup-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .signup-prompt__divider {
+    width: 100%;
+    height: 1px;
+    background: var(--auth-border);
+  }
+  
+  .signup-prompt__text {
+    font-size: 0.875rem;
+    color: var(--auth-text-secondary);
+  }
+  
+  .signup-prompt__btn {
+    padding: 0.7rem 2.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-blood-red);
+    background: transparent;
+    border: 2px solid var(--color-blood-red);
+    border-radius: var(--auth-radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  }
+  
+  .signup-prompt__btn:hover {
+    background: var(--color-blood-red);
+    color: var(--color-white);
+    transform: translateY(-1px);
+  }
+  
+  /* ── Animation ── */
+  @keyframes loginFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* ── Tablet ── */
+  @media (max-width: 480px) {
+    .login-page__card {
+      padding: 1.75rem 1.25rem;
+    }
+  
+    .role-slider__btn {
+      font-size: 0.68rem;
+      padding: 0.5rem 0.25rem;
+    }
+  }
+  
+  /* ── Small Mobile ── */
+  @media (max-width: 360px) {
+    .role-slider__track {
+      flex-wrap: wrap;
+      border-radius: var(--auth-radius-md);
+      padding: 6px;
+    }
+  
+    .role-slider__indicator {
+      display: none;
+    }
+  
+    .role-slider__btn {
+      flex: 1 1 45%;
+      font-size: 0.72rem;
+      border-radius: var(--auth-radius-sm);
+    }
+  
+    .role-slider__btn--active {
+      background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+      color: var(--color-white);
+    }
+  }

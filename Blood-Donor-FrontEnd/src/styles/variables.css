@@ -1,15 +1,10 @@
 :root {
-    --color-dark-red: #6b0f1a;
+    /* Shared brand colors */
     --color-blood-red: #c41e3a;
     --color-blood-red-light: #e63946;
+    --color-blood-red-dark: #a01830;
     --color-white: #ffffff;
     --color-light-gray: #f0f0f0;
-    --color-text-muted: rgba(255, 255, 255, 0.85);
-  
-    --glass-bg: rgba(255, 255, 255, 0.12);
-    --glass-border: rgba(255, 255, 255, 0.22);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-    --glass-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.35);
   
     --radius-lg: 20px;
     --radius-md: 12px;
@@ -19,4 +14,30 @@
     --transition-medium: 0.4s ease;
   
     --font-title: 'Segoe UI', system-ui, sans-serif;
+  
+    /* Landing page — bright healthcare theme */
+    --landing-bg: #ffffff;
+    --landing-bg-soft: #f4f8fc;
+    --landing-bg-blue: #e8f4fd;
+    --landing-accent-red: #fce8ea;
+    --landing-text: #1a2b3c;
+    --landing-text-muted: #5a6b7c;
+    --landing-border: #e2e8f0;
+    --landing-shadow: 0 4px 24px rgba(26, 43, 60, 0.08);
+    --landing-shadow-hover: 0 12px 40px rgba(26, 43, 60, 0.14);
+    --landing-nav-height: 72px;
+  
+    /* Auth / Login page */
+    --auth-card-bg: #ffffff;
+    --auth-input-bg: #fafafa;
+    --auth-slider-bg: #f0f0f0;
+    --auth-text-primary: #1a1a1a;
+    --auth-text-secondary: #555555;
+    --auth-text-muted: #999999;
+    --auth-border: #e0e0e0;
+    --auth-error: #c41e3a;
+    --auth-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    --auth-radius-lg: 16px;
+    --auth-radius-md: 12px;
+    --auth-radius-sm: 8px;
   }
