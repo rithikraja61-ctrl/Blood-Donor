@@ -1,0 +1,293 @@
+/* ── Layout ── */
+.landing-layout {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    overflow: hidden;
+  }
+  
+  .landing-layout__bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url('../assets/images/hospital-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(4px);
+    transform: scale(1.05);
+  }
+  
+  .landing-layout__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      135deg,
+      rgba(107, 15, 26, 0.82) 0%,
+      rgba(60, 8, 14, 0.88) 50%,
+      rgba(30, 4, 8, 0.92) 100%
+    );
+  }
+  
+  .landing-layout__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    animation: fadeIn 0.8s ease forwards;
+  }
+  
+  /* ── Brand Header ── */
+  .brand-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+    animation: slideUp 0.7s ease 0.1s both;
+  }
+  
+  .brand-header__logo {
+    width: 72px;
+    height: 72px;
+    filter: drop-shadow(0 4px 12px rgba(196, 30, 58, 0.5));
+  }
+  
+  .brand-header__title {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-white);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  .brand-header__subtitle {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: var(--color-text-muted);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+  
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .card-grid__item {
+    animation: slideUp 0.7s ease both;
+  }
+  
+  .card-grid__item--login {
+    animation-delay: 0.25s;
+  }
+  
+  .card-grid__item--welcome {
+    animation-delay: 0.15s;
+  }
+  
+  .card-grid__item--signup {
+    animation-delay: 0.35s;
+  }
+  
+  /* ── Glass Card Base ── */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    padding: 2rem 1.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+  
+  .glass-card--clickable {
+    cursor: pointer;
+  }
+  
+  .glass-card--clickable:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--glass-shadow-hover);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+  
+  .glass-card__icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 1rem;
+    color: var(--color-blood-red-light);
+  }
+  
+  .glass-card__heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-white);
+    margin-bottom: 0.75rem;
+  }
+  
+  .glass-card__description {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+  }
+  
+  /* ── Welcome Card ── */
+  .welcome-card {
+    padding: 2.5rem 2rem;
+  }
+  
+  .welcome-card__heading {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-white);
+    margin-bottom: 1.25rem;
+    line-height: 1.3;
+  }
+  
+  .welcome-card__description {
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    line-height: 1.75;
+    margin-bottom: 1.75rem;
+    text-align: center;
+  }
+  
+  .welcome-card__description p + p {
+    margin-top: 0.6rem;
+  }
+  
+  .welcome-card__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+    color: var(--color-white);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 16px rgba(196, 30, 58, 0.4);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+  
+  .welcome-card__btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(196, 30, 58, 0.55);
+  }
+  
+  .welcome-card__btn:active {
+    transform: scale(0.98);
+  }
+  
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* ── Tablet ── */
+  @media (max-width: 992px) {
+    .card-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+  
+    .card-grid__item--welcome {
+      grid-column: 1 / -1;
+      order: 1;
+    }
+  
+    .card-grid__item--login {
+      order: 2;
+    }
+  
+    .card-grid__item--signup {
+      order: 3;
+    }
+  
+    .landing-layout {
+      padding: 2rem 1.25rem;
+    }
+  }
+  
+  /* ── Mobile ── */
+  @media (max-width: 576px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  
+    .card-grid__item--welcome,
+    .card-grid__item--login,
+    .card-grid__item--signup {
+      grid-column: 1;
+      order: unset;
+    }
+  
+    .glass-card {
+      padding: 1.75rem 1.5rem;
+    }
+  
+    .welcome-card {
+      padding: 2rem 1.5rem;
+    }
+  
+    .brand-header__logo {
+      width: 56px;
+      height: 56px;
+    }
+  
+    .landing-layout {
+      padding: 1.5rem 1rem;
+      align-items: flex-start;
+      padding-top: 2.5rem;
+    }
+  
+    .landing-layout__content {
+      gap: 2rem;
+    }
+  }
