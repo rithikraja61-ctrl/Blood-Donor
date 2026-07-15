@@ -18,4 +18,5 @@ public class UserResponse {
     private BloodType bloodType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String pincode;
 }

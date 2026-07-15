@@ -7,10 +7,16 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
+
 
 @Getter
 @Setter
 public class UserSignupRequest {
+
+    @NotBlank(message = "Pincode is required")
+    @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")
+    private String pincode;
 
     @NotBlank(message = "Name is required")
     private String name;

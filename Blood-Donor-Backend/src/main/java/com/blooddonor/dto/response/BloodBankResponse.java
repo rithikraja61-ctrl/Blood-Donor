@@ -16,4 +16,5 @@ public class BloodBankResponse {
     private String address;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String pincode;
 }

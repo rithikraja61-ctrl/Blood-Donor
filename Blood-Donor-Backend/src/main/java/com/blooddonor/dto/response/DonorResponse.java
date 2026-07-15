@@ -19,4 +19,5 @@ public class DonorResponse {
     private boolean available;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String pincode;
 }

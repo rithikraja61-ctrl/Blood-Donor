@@ -19,6 +19,7 @@ public class UserMapper {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(request.getPassword());
         user.setAddress(request.getAddress());
+        user.setPincode(request.getPincode());
         user.setBloodType(request.getBloodType());
         user.setRole(Role.USER);
         return user;
@@ -31,6 +32,7 @@ public class UserMapper {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
+                .pincode(user.getPincode())
                 .bloodType(user.getBloodType())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
@@ -41,6 +43,7 @@ public class UserMapper {
         Optional.ofNullable(request.getName()).ifPresent(user::setName);
         Optional.ofNullable(request.getPhoneNumber()).ifPresent(user::setPhoneNumber);
         Optional.ofNullable(request.getAddress()).ifPresent(user::setAddress);
+        Optional.ofNullable(request.getPincode()).ifPresent(user::setPincode);
         Optional.ofNullable(request.getBloodType()).ifPresent(user::setBloodType);
     }
 }

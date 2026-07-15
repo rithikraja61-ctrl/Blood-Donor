@@ -19,6 +19,7 @@ public class DonorMapper {
         donor.setPhoneNumber(request.getPhoneNumber());
         donor.setPassword(request.getPassword());
         donor.setAddress(request.getAddress());
+        donor.setPincode(request.getPincode());
         donor.setBloodType(request.getBloodType());
         donor.setAvailable(true);
         donor.setRole(Role.DONOR);
@@ -32,6 +33,7 @@ public class DonorMapper {
                 .email(donor.getEmail())
                 .phoneNumber(donor.getPhoneNumber())
                 .address(donor.getAddress())
+                .pincode(donor.getPincode())
                 .bloodType(donor.getBloodType())
                 .available(donor.isAvailable())
                 .createdAt(donor.getCreatedAt())
@@ -43,6 +45,7 @@ public class DonorMapper {
         Optional.ofNullable(request.getName()).ifPresent(donor::setName);
         Optional.ofNullable(request.getPhoneNumber()).ifPresent(donor::setPhoneNumber);
         Optional.ofNullable(request.getAddress()).ifPresent(donor::setAddress);
+        Optional.ofNullable(request.getPincode()).ifPresent(donor::setPincode);
         Optional.ofNullable(request.getBloodType()).ifPresent(donor::setBloodType);
         Optional.ofNullable(request.getAvailable()).ifPresent(donor::setAvailable);
     }

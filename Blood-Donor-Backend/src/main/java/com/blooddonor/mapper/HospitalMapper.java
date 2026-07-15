@@ -19,6 +19,7 @@ public class HospitalMapper {
         hospital.setPhoneNumber(request.getPhoneNumber());
         hospital.setPassword(request.getPassword());
         hospital.setAddress(request.getAddress());
+        hospital.setPincode(request.getPincode());
         hospital.setRole(Role.HOSPITAL);
         return hospital;
     }
@@ -30,6 +31,7 @@ public class HospitalMapper {
                 .email(hospital.getEmail())
                 .phoneNumber(hospital.getPhoneNumber())
                 .address(hospital.getAddress())
+                .pincode(hospital.getPincode())
                 .createdAt(hospital.getCreatedAt())
                 .updatedAt(hospital.getUpdatedAt())
                 .build();
@@ -39,5 +41,6 @@ public class HospitalMapper {
         Optional.ofNullable(request.getName()).ifPresent(hospital::setName);
         Optional.ofNullable(request.getPhoneNumber()).ifPresent(hospital::setPhoneNumber);
         Optional.ofNullable(request.getAddress()).ifPresent(hospital::setAddress);
+        Optional.ofNullable(request.getPincode()).ifPresent(hospital::setPincode);
     }
 }

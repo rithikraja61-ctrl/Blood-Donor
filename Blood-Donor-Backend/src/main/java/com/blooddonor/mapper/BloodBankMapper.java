@@ -19,6 +19,7 @@ public class BloodBankMapper {
         bloodBank.setPhoneNumber(request.getPhoneNumber());
         bloodBank.setPassword(request.getPassword());
         bloodBank.setAddress(request.getAddress());
+        bloodBank.setPincode(request.getPincode());
         bloodBank.setRole(Role.BLOOD_BANK);
         return bloodBank;
     }
@@ -30,6 +31,7 @@ public class BloodBankMapper {
                 .email(bloodBank.getEmail())
                 .phoneNumber(bloodBank.getPhoneNumber())
                 .address(bloodBank.getAddress())
+                .pincode(bloodBank.getPincode())
                 .createdAt(bloodBank.getCreatedAt())
                 .updatedAt(bloodBank.getUpdatedAt())
                 .build();
@@ -39,5 +41,6 @@ public class BloodBankMapper {
         Optional.ofNullable(request.getName()).ifPresent(bloodBank::setName);
         Optional.ofNullable(request.getPhoneNumber()).ifPresent(bloodBank::setPhoneNumber);
         Optional.ofNullable(request.getAddress()).ifPresent(bloodBank::setAddress);
+        Optional.ofNullable(request.getPincode()).ifPresent(bloodBank::setPincode);
     }
 }

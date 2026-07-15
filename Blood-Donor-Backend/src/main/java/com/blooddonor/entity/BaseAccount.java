@@ -48,6 +48,8 @@ public abstract class BaseAccount {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+    @Column(nullable = false, length = 6)
+    private String pincode;
 
     @PrePersist
     protected void onCreate() {
