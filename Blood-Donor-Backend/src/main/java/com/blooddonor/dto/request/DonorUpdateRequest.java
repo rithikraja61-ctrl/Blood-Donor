@@ -13,11 +13,14 @@ public class DonorUpdateRequest {
     private String name;
     private String phoneNumber;
     private String address;
+    private String city;
 
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
+
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")
     private String pincode;
+
     private BloodType bloodType;
     private Boolean available;
 }

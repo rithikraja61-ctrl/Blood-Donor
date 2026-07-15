@@ -27,6 +27,8 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   address: '',
+  pincode: '',
+  city: '',
   password: '',
   confirmPassword: '',
   bloodGroup: '',
@@ -54,7 +56,7 @@ function SignupForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     const filtered =
-      name === 'phone' || name === 'hospitalPhone' || name === 'organizationPhone'
+      name === 'phone' || name === 'hospitalPhone' || name === 'organizationPhone' || name === 'pincode'
         ? value.replace(/\D/g, '')
         : value;
 
@@ -86,6 +88,12 @@ function SignupForm() {
 
     if (activeRole === 'User' || activeRole === 'Donor') {
       if (!d.bloodGroup) e.bloodGroup = 'Blood group is required';
+      if (!d.pincode.trim()) e.pincode = 'PIN code is required';
+      else if (!/^[0-9]{6}$/.test(d.pincode)) e.pincode = 'PIN code must be 6 digits';
+    }
+
+    if (activeRole === 'Donor') {
+      if (!d.city.trim()) e.city = 'City is required';
     }
 
     if (activeRole === 'Hospital') {
@@ -181,18 +189,44 @@ function SignupForm() {
         placeholder="Enter your address"
       />
 
+      {(activeRole === 'User' || activeRole === 'Donor') && (
+        <CommonInput
+          id="pincode"
+          label="PIN Code"
+          name="pincode"
+          type="tel"
+          value={formData.pincode}
+          onChange={handleChange}
+          error={errors.pincode}
+          placeholder="Enter 6-digit PIN code"
+        />
+      )}
+
       <div key={activeRole} className="role-fields">
         {(activeRole === 'User' || activeRole === 'Donor') && (
-          <CommonInput
-            id="bloodGroup"
-            label="Blood Group"
-            name="bloodGroup"
-            type="select"
-            value={formData.bloodGroup}
-            onChange={handleChange}
-            error={errors.bloodGroup}
-            options={BLOOD_GROUPS}
-          />
+          <>
+            {activeRole === 'Donor' && (
+              <CommonInput
+                id="city"
+                label="City"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                error={errors.city}
+                placeholder="Enter your city"
+              />
+            )}
+            <CommonInput
+              id="bloodGroup"
+              label="Blood Group"
+              name="bloodGroup"
+              type="select"
+              value={formData.bloodGroup}
+              onChange={handleChange}
+              error={errors.bloodGroup}
+              options={BLOOD_GROUPS}
+            />
+          </>
         )}
 
         {activeRole === 'Hospital' && (

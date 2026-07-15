@@ -7,14 +7,19 @@ import {
   
   function buildSignupPayload(role, formData) {
     if (role === 'User' || role === 'Donor') {
-      return {
+      const payload = {
         name: formData.name.trim(),
         email: formData.email.trim(),
         phoneNumber: formData.phone.trim(),
         password: formData.password,
         address: formData.address.trim(),
+        pincode: formData.pincode.trim(),
         bloodType: BLOOD_GROUP_TO_TYPE[formData.bloodGroup],
       };
+      if (role === 'Donor') {
+        payload.city = formData.city.trim();
+      }
+      return payload;
     }
     if (role === 'Hospital') {
       return {
