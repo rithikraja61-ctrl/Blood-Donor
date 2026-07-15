@@ -3,6 +3,7 @@ package com.blooddonor.service.impl;
 import com.blooddonor.dto.request.DonorUpdateRequest;
 import com.blooddonor.dto.response.DonorResponse;
 import com.blooddonor.dto.response.DonorSearchResponse;
+import com.blooddonor.dto.response.PagedDonorSearchResponse;
 import com.blooddonor.entity.Donor;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.DonorMapper;
@@ -12,6 +13,9 @@ import com.blooddonor.util.BloodCompatibilityUtil;
 import com.blooddonor.util.PincodeProximityUtil;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +72,7 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
-    public List<DonorSearchResponse> searchDonors(String bloodGroup, String pinCode) {
+    public PagedDonorSearchResponse searchDonors(String bloodGroup, String pinCode, Pageable pageable) {
         BloodType requiredType = BloodType.fromDisplay(bloodGroup);
         List<BloodType> compatibleTypes = BloodCompatibilityUtil.getCompatibleTypesInPriorityOrder(requiredType);
         LocalDate cutoffDate = LocalDate.now().minusDays(DONATION_COOLDOWN_DAYS);
@@ -87,7 +91,7 @@ public class DonorServiceImpl implements DonorService {
                     .forEach(resultPool::add);
         }
 
-        return resultPool.stream()
+        List<DonorSearchResponse> sortedResults = resultPool.stream()
                 .sorted(Comparator
                         .comparingInt((Donor d) -> PincodeProximityUtil.getDistanceRank(
                                 PincodeProximityUtil.getDistancePriority(pinCode, d.getPincode())))
@@ -95,6 +99,14 @@ public class DonorServiceImpl implements DonorService {
                         .thenComparing(Donor::getLastDonationDate, Comparator.nullsFirst(Comparator.naturalOrder())))
                 .map(donor -> toSearchResponse(donor, pinCode))
                 .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sortedResults.size());
+        List<DonorSearchResponse> pageContent =
+                start >= sortedResults.size() ? List.of() : sortedResults.subList(start, end);
+
+        Page<DonorSearchResponse> page = new PageImpl<>(pageContent, pageable, sortedResults.size());
+        return PagedDonorSearchResponse.from(page);
     }
 
     private DonorSearchResponse toSearchResponse(Donor donor, String searchPin) {
