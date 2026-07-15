@@ -34,14 +34,14 @@ services:
 
   frontend:
     build:
-      context: ./Blood-Donor-FrontEnd
+      context: ./Blood-Donor-Frontend
       dockerfile: Dockerfile
     container_name: blood-donor-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5174:5173"
     volumes:
-      - ./Blood-Donor-FrontEnd:/app
+      - ./Blood-Donor-Frontend:/app
       - /app/node_modules
     environment:
       CHOKIDAR_USEPOLLING: "true"
