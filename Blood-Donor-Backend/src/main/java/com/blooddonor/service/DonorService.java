@@ -1,9 +1,8 @@
 package com.blooddonor.service;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
+import com.blooddonor.dto.response.CursorDonorSearchResponse;
 import com.blooddonor.dto.response.DonorResponse;
-import com.blooddonor.dto.response.PagedDonorSearchResponse;
-import org.springframework.data.domain.Pageable;
 
 public interface DonorService {
 
@@ -13,5 +12,10 @@ public interface DonorService {
 
     void deleteAccount();
 
-    PagedDonorSearchResponse searchDonors(String bloodGroup, String pinCode, Pageable pageable);
+    CursorDonorSearchResponse searchDonors(
+            String bloodGroup,
+            String pinCode,
+            int limit,
+            String nextCursor,
+            String previousCursor);
 }

@@ -14,11 +14,6 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
-  data:
-    web:
-      pageable:
-        default-page-size: 10
-        max-page-size: 50
 
 server:
   port: 8080
