@@ -1,0 +1,36 @@
+.profile-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.profile-page__header {
+  margin-bottom: 1.25rem;
+}
+
+.profile-page__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--landing-text);
+}
+
+.profile-page__subtitle {
+  color: var(--landing-text-muted);
+  font-size: 0.95rem;
+}
+
+.profile-page__logout-btn {
+  margin-top: 1.25rem;
+  width: 100%;
+  max-width: 220px;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.profile-page__logout-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(196, 30, 58, 0.25);
+}

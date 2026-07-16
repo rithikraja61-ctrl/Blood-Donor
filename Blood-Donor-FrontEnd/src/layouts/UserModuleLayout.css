@@ -1,0 +1,23 @@
+.user-module-layout {
+  min-height: 100vh;
+  display: flex;
+  background: var(--landing-bg-soft);
+}
+
+.user-module-layout__content {
+  flex: 1;
+  padding: 1.5rem 1rem 2.5rem;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .user-module-layout {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 768px) {
+  .user-module-layout__content {
+    padding: 2rem 1.5rem 3rem;
+  }
+}

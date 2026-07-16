@@ -1,9 +1,13 @@
 import DonorCard from './DonorCard';
 import EmptyState from '../common/EmptyState';
 
-function DonorList({ donors }) {
+function DonorList({ donors, showEmpty = true }) {
+  if (!showEmpty) {
+    return null;
+  }
+
   if (donors.length === 0) {
-    return <EmptyState message="No donors found. Try changing your filters." />;
+    return <EmptyState message="No donors found. Try changing your search or filters." />;
   }
 
   return (

@@ -1,5 +1,5 @@
 function DonorCard({ donor }) {
-  const maskedPhone = donor.phone.replace(/(\d{2})\d{6}(\d{2})/, '$1******$2');
+  const maskedPhone = donor.phone?.replace(/(\d{2})\d{6}(\d{2})/, '$1******$2') || '—';
 
   return (
     <article className="donor-card">
@@ -19,7 +19,7 @@ function DonorCard({ donor }) {
         <li><strong>Pincode:</strong> {donor.pincode}</li>
         <li><strong>Phone:</strong> {maskedPhone}</li>
         <li><strong>Last donation:</strong> {donor.lastDonation}</li>
-        <li><strong>Distance:</strong> {donor.distanceKm} km</li>
+        <li><strong>Distance:</strong> {donor.distanceLabel}</li>
       </ul>
 
       <button type="button" className="donor-card__btn" disabled={donor.availability === 'Unavailable'}>

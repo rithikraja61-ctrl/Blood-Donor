@@ -1,5 +1,5 @@
 export const POST_LOGIN_ROUTES = {
-    USER: '/find-donor',
+    USER: '/user-home',
     DONOR: '/',
     HOSPITAL: '/',
     BLOOD_BANK: '/',
