@@ -1,0 +1,105 @@
+.user-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--color-white);
+  border-right: 1px solid var(--landing-border);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+}
+
+.user-sidebar__profile {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--landing-bg-soft);
+}
+
+.user-sidebar__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  flex-shrink: 0;
+}
+
+.user-sidebar__info {
+  min-width: 0;
+}
+
+.user-sidebar__name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--landing-text);
+}
+
+.user-sidebar__email {
+  font-size: 0.78rem;
+  color: var(--landing-text-muted);
+  word-break: break-all;
+}
+
+.user-sidebar__role {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-blood-red);
+  background: var(--landing-accent-red);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.user-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.user-sidebar__link,
+.user-sidebar__logout {
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--landing-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.user-sidebar__link:hover,
+.user-sidebar__logout:hover {
+  background: var(--landing-bg-soft);
+  color: var(--color-blood-red);
+}
+
+.user-sidebar__link--active {
+  background: var(--landing-accent-red);
+  color: var(--color-blood-red);
+}
+
+.user-sidebar__logout {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--landing-border);
+  padding-top: 1rem;
+  color: var(--color-blood-red);
+}
+
+@media (max-width: 900px) {
+  .user-sidebar {
+    width: 100%;
+    min-height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--landing-border);
+  }
+}

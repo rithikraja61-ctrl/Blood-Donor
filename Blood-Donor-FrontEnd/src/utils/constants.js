@@ -14,6 +14,10 @@ export const ROLE_TO_SIGNUP_ENDPOINT = {
   'Blood Bank': '/auth/bloodbank/signup',
 };
 
+export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+export const BLOOD_GROUP_FILTER_OPTIONS = ['All', ...BLOOD_GROUPS];
+
 export const BLOOD_GROUP_TO_TYPE = {
   'A+': 'A_POSITIVE', 'A-': 'A_NEGATIVE',
   'B+': 'B_POSITIVE', 'B-': 'B_NEGATIVE',
@@ -21,5 +25,25 @@ export const BLOOD_GROUP_TO_TYPE = {
   'O+': 'O_POSITIVE', 'O-': 'O_NEGATIVE',
 };
 
+export const TYPE_TO_BLOOD_GROUP = Object.fromEntries(
+  Object.entries(BLOOD_GROUP_TO_TYPE).map(([group, type]) => [type, group]),
+);
+
 export const AUTH_TOKEN_KEY = 'bloodDonorToken';
 export const AUTH_USER_KEY = 'bloodDonorUser';
+
+export const ROLES = {
+  USER: 'USER',
+  DONOR: 'DONOR',
+  HOSPITAL: 'HOSPITAL',
+  BLOOD_BANK: 'BLOOD_BANK',
+};
+
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  USER_HOME: '/user-home',
+  FIND_DONOR: '/find-donor',
+  PROFILE: '/profile',
+};
