@@ -1,0 +1,88 @@
+/* Shared bits used by common components in this module */
+.page-header { margin-bottom: 1.5rem; }
+.page-header__title { font-size: 1.5rem; font-weight: 700; color: var(--landing-text); }
+.page-header__subtitle { margin-top: 0.35rem; color: var(--landing-text-muted); font-size: 0.95rem; }
+
+.search-input, .filter-select { display: flex; flex-direction: column; gap: 0.4rem; }
+.search-input__label, .filter-select__label { font-size: 0.85rem; font-weight: 600; color: var(--landing-text); }
+.search-input__field, .filter-select__field {
+  padding: 0.65rem 0.85rem; border: 1px solid var(--landing-border);
+  border-radius: var(--radius-sm); background: var(--color-white); font-size: 0.9rem;
+}
+.search-input__field:focus, .filter-select__field:focus {
+  outline: none; border-color: var(--color-blood-red);
+}
+
+.empty-state {
+  text-align: center; padding: 3rem 1rem; background: var(--color-white);
+  border: 1px dashed var(--landing-border); border-radius: var(--radius-md);
+  color: var(--landing-text-muted);
+}
+.empty-state__icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+
+/* Page */
+.find-donor-page { max-width: 1200px; margin: 0 auto; }
+
+.find-donor-page__count {
+  margin: 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--landing-text-muted);
+}
+
+/* Filters */
+.donor-filters {
+  display: grid; grid-template-columns: 1fr; gap: 1rem;
+  padding: 1.25rem; background: var(--color-white);
+  border: 1px solid var(--landing-border); border-radius: var(--radius-md);
+  box-shadow: var(--landing-shadow);
+}
+.donor-filters__reset {
+  padding: 0.65rem 1rem; background: var(--landing-bg-soft);
+  border: 1px solid var(--landing-border); border-radius: var(--radius-sm);
+  font-weight: 600; color: var(--landing-text); align-self: end;
+}
+.donor-filters__reset:hover { background: var(--landing-accent-red); color: var(--color-blood-red); }
+
+@media (min-width: 640px) { .donor-filters { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 992px) { .donor-filters { grid-template-columns: repeat(3, 1fr); } }
+
+/* Donor list */
+.donor-list {
+  display: grid; grid-template-columns: 1fr; gap: 1rem;
+}
+@media (min-width: 768px) { .donor-list { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .donor-list { grid-template-columns: repeat(3, 1fr); } }
+
+/* Donor card */
+.donor-card {
+  background: var(--color-white); border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md); padding: 1.25rem;
+  box-shadow: var(--landing-shadow); display: flex; flex-direction: column; gap: 1rem;
+}
+.donor-card__header { display: flex; align-items: center; gap: 0.75rem; }
+.donor-card__avatar {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--color-blood-red);
+  color: var(--color-white); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.donor-card__name { font-size: 1rem; font-weight: 600; }
+.donor-card__blood {
+  display: inline-block; margin-top: 0.15rem; font-size: 0.8rem; font-weight: 700;
+  color: var(--color-blood-red); background: var(--landing-accent-red);
+  padding: 0.1rem 0.5rem; border-radius: 999px;
+}
+.donor-card__badge {
+  margin-left: auto; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem;
+  border-radius: 999px; white-space: nowrap;
+}
+.donor-card__badge--available { background: #e6f7ee; color: #1a7f4b; }
+.donor-card__badge--unavailable { background: #fdecea; color: #b42318; }
+
+.donor-card__details { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem; color: var(--landing-text-muted); }
+.donor-card__details strong { color: var(--landing-text); }
+
+.donor-card__btn {
+  padding: 0.6rem 1rem; border-radius: var(--radius-sm); font-weight: 600;
+  background: var(--color-blood-red); color: var(--color-white);
+  transition: background var(--transition-fast);
+}
+.donor-card__btn:hover:not(:disabled) { background: var(--color-blood-red-dark); }
+.donor-card__btn:disabled { background: var(--auth-text-muted); cursor: not-allowed; }
