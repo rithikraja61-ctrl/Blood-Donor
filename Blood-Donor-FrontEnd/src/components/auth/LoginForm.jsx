@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ApiError } from '../../services/apiClient';
+import { getPostLoginRoute } from '../../utils/roleRoutes';
 import RoleSlider from './RoleSlider';
 import LoginButton from './LoginButton';
 import SignupPrompt from './SignupPrompt';
@@ -45,8 +46,8 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      await login(activeRole, email, password);
-      navigate('/');
+      const authData = await login(activeRole, email, password);
+      navigate(getPostLoginRoute(authData.role), { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setLoginError('Invalid email or password.');
