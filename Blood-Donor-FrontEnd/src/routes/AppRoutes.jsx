@@ -4,6 +4,7 @@ import LoginPage from '../pages/Login/LoginPage';
 import RegisterPage from '../pages/Register/RegisterPage';
 import FindDonorPage from '../pages/FindDonor/FindDonorPage';
 import ModuleLayout from '../layouts/ModuleLayout';
+import ProtectedRoute from './ProtectedRoute';
 
 function AppRoutes() {
   return (
@@ -14,9 +15,11 @@ function AppRoutes() {
       <Route
         path="/find-donor"
         element={(
-          <ModuleLayout>
-            <FindDonorPage />
-          </ModuleLayout>
+          <ProtectedRoute>
+            <ModuleLayout>
+              <FindDonorPage />
+            </ModuleLayout>
+          </ProtectedRoute>
         )}
       />
     </Routes>
