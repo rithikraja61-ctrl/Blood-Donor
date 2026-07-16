@@ -30,13 +30,6 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   address: '',
-<<<<<<< HEAD
-  pincode: '',
-  city: '',
-  password: '',
-  confirmPassword: '',
-=======
->>>>>>> 8f90b4e (PIN-CODE In FrontEnd)
   bloodGroup: '',
   pincode: '',
   hospitalName: '',
@@ -64,12 +57,6 @@ function SignupForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-<<<<<<< HEAD
-    const filtered =
-      name === 'phone' || name === 'hospitalPhone' || name === 'organizationPhone' || name === 'pincode'
-        ? value.replace(/\D/g, '')
-        : value;
-=======
     let filtered = value;
 
     if (PHONE_FIELDS.has(name)) {
@@ -77,7 +64,6 @@ function SignupForm() {
     } else if (name === 'pincode') {
       filtered = value.replace(/\D/g, '').slice(0, 6);
     }
->>>>>>> 8f90b4e (PIN-CODE In FrontEnd)
 
     setFormData((prev) => ({ ...prev, [name]: filtered }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -114,12 +100,6 @@ function SignupForm() {
       else if (!PHONE_REGEX.test(d.phone)) e.phone = 'Phone must contain 10–15 digits only';
       if (!d.address.trim()) e.address = 'Address is required';
       if (!d.bloodGroup) e.bloodGroup = 'Blood group is required';
-      if (!d.pincode.trim()) e.pincode = 'PIN code is required';
-      else if (!/^[0-9]{6}$/.test(d.pincode)) e.pincode = 'PIN code must be 6 digits';
-    }
-
-    if (activeRole === 'Donor') {
-      if (!d.city.trim()) e.city = 'City is required';
     }
 
     if (activeRole === 'Hospital') {
@@ -176,77 +156,6 @@ function SignupForm() {
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
       <RoleSelector activeRole={activeRole} onRoleChange={handleRoleChange} />
 
-<<<<<<< HEAD
-      <CommonInput
-        id="name"
-        label="Full Name"
-        name="name"
-        value={formData.name}
-        onChange={handleChange}
-        error={errors.name}
-        placeholder="Enter your full name"
-      />
-
-      <CommonInput
-        id="email"
-        label="Email"
-        name="email"
-        type="email"
-        value={formData.email}
-        onChange={handleChange}
-        error={errors.email}
-        placeholder="Enter your email"
-      />
-
-      <CommonInput
-        id="phone"
-        label="Phone Number"
-        name="phone"
-        type="tel"
-        value={formData.phone}
-        onChange={handleChange}
-        error={errors.phone}
-        placeholder="Enter phone number"
-      />
-
-      <CommonInput
-        id="address"
-        label="Address"
-        name="address"
-        value={formData.address}
-        onChange={handleChange}
-        error={errors.address}
-        placeholder="Enter your address"
-      />
-
-      {(activeRole === 'User' || activeRole === 'Donor') && (
-        <CommonInput
-          id="pincode"
-          label="PIN Code"
-          name="pincode"
-          type="tel"
-          value={formData.pincode}
-          onChange={handleChange}
-          error={errors.pincode}
-          placeholder="Enter 6-digit PIN code"
-        />
-      )}
-
-      <div key={activeRole} className="role-fields">
-        {(activeRole === 'User' || activeRole === 'Donor') && (
-          <>
-            {activeRole === 'Donor' && (
-              <CommonInput
-                id="city"
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                error={errors.city}
-                placeholder="Enter your city"
-              />
-            )}
-=======
       <div key={activeRole} className="role-fields">
         {isPersonalRole && (
           <>
@@ -288,7 +197,6 @@ function SignupForm() {
               error={errors.address}
               placeholder="Enter your address"
             />
->>>>>>> 8f90b4e (PIN-CODE In FrontEnd)
             <CommonInput
               id="bloodGroup"
               label="Blood Group"
