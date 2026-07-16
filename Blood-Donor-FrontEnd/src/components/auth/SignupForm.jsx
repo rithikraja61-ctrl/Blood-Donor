@@ -9,6 +9,9 @@ import PasswordInput from './PasswordInput';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[0-9]{10,15}$/;
+const PINCODE_REGEX = /^[0-9]{6}$/;
+
+const PHONE_FIELDS = new Set(['phone', 'hospitalPhone', 'bloodBankPhone']);
 
 const BLOOD_GROUPS = [
   { value: '', label: 'Select Blood Group' },
@@ -27,20 +30,19 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   address: '',
-  pincode: '',
-  city: '',
-  password: '',
-  confirmPassword: '',
   bloodGroup: '',
+  pincode: '',
   hospitalName: '',
   hospitalEmail: '',
   hospitalPhone: '',
   hospitalAddress: '',
+  bloodBankName: '',
+  bloodBankEmail: '',
+  bloodBankPhone: '',
+  bloodBankAddress: '',
   licenseNumber: '',
-  organizationName: '',
-  organizationEmail: '',
-  organizationPhone: '',
-  organizationAddress: '',
+  password: '',
+  confirmPassword: '',
 };
 
 function SignupForm() {
@@ -55,10 +57,13 @@ function SignupForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const filtered =
-      name === 'phone' || name === 'hospitalPhone' || name === 'organizationPhone' || name === 'pincode'
-        ? value.replace(/\D/g, '')
-        : value;
+    let filtered = value;
+
+    if (PHONE_FIELDS.has(name)) {
+      filtered = value.replace(/\D/g, '');
+    } else if (name === 'pincode') {
+      filtered = value.replace(/\D/g, '').slice(0, 6);
+    }
 
     setFormData((prev) => ({ ...prev, [name]: filtered }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -71,50 +76,52 @@ function SignupForm() {
     setSubmitError('');
   };
 
-  const validate = () => {
-    const e = {};
-    const d = formData;
-
-    if (!d.name.trim()) e.name = 'Full name is required';
-    if (!d.email.trim()) e.email = 'Email is required';
-    else if (!EMAIL_REGEX.test(d.email)) e.email = 'Invalid email format';
-    if (!d.phone.trim()) e.phone = 'Phone number is required';
-    else if (!PHONE_REGEX.test(d.phone)) e.phone = 'Phone must contain 10–15 digits only';
-    if (!d.address.trim()) e.address = 'Address is required';
+  const validatePasswordFields = (d, e) => {
     if (!d.password) e.password = 'Password is required';
     else if (d.password.length < 8) e.password = 'Password must be at least 8 characters';
     if (!d.confirmPassword) e.confirmPassword = 'Confirm password is required';
     else if (d.password !== d.confirmPassword) e.confirmPassword = 'Passwords do not match';
+  };
+
+  const validatePincode = (d, e) => {
+    if (!d.pincode.trim()) e.pincode = 'Pincode is required';
+    else if (!PINCODE_REGEX.test(d.pincode)) e.pincode = 'Pincode must be a 6-digit number';
+  };
+
+  const validate = () => {
+    const e = {};
+    const d = formData;
 
     if (activeRole === 'User' || activeRole === 'Donor') {
+      if (!d.name.trim()) e.name = 'Full name is required';
+      if (!d.email.trim()) e.email = 'Email is required';
+      else if (!EMAIL_REGEX.test(d.email)) e.email = 'Invalid email format';
+      if (!d.phone.trim()) e.phone = 'Phone number is required';
+      else if (!PHONE_REGEX.test(d.phone)) e.phone = 'Phone must contain 10–15 digits only';
+      if (!d.address.trim()) e.address = 'Address is required';
       if (!d.bloodGroup) e.bloodGroup = 'Blood group is required';
-      if (!d.pincode.trim()) e.pincode = 'PIN code is required';
-      else if (!/^[0-9]{6}$/.test(d.pincode)) e.pincode = 'PIN code must be 6 digits';
-    }
-
-    if (activeRole === 'Donor') {
-      if (!d.city.trim()) e.city = 'City is required';
     }
 
     if (activeRole === 'Hospital') {
       if (!d.hospitalName.trim()) e.hospitalName = 'Hospital name is required';
       if (!d.hospitalEmail.trim()) e.hospitalEmail = 'Hospital email is required';
       else if (!EMAIL_REGEX.test(d.hospitalEmail)) e.hospitalEmail = 'Invalid email format';
-      if (!d.hospitalPhone.trim()) e.hospitalPhone = 'Hospital phone is required';
+      if (!d.hospitalPhone.trim()) e.hospitalPhone = 'Hospital phone number is required';
       else if (!PHONE_REGEX.test(d.hospitalPhone)) e.hospitalPhone = 'Phone must contain 10–15 digits only';
       if (!d.hospitalAddress.trim()) e.hospitalAddress = 'Hospital address is required';
-      if (!d.licenseNumber.trim()) e.licenseNumber = 'License number is required';
     }
 
     if (activeRole === 'Blood Bank') {
-      if (!d.organizationName.trim()) e.organizationName = 'Organization name is required';
-      if (!d.organizationEmail.trim()) e.organizationEmail = 'Organization email is required';
-      else if (!EMAIL_REGEX.test(d.organizationEmail)) e.organizationEmail = 'Invalid email format';
-      if (!d.organizationPhone.trim()) e.organizationPhone = 'Organization phone is required';
-      else if (!PHONE_REGEX.test(d.organizationPhone)) e.organizationPhone = 'Phone must contain 10–15 digits only';
-      if (!d.organizationAddress.trim()) e.organizationAddress = 'Organization address is required';
-      if (!d.licenseNumber.trim()) e.licenseNumber = 'License number is required';
+      if (!d.bloodBankName.trim()) e.bloodBankName = 'Blood bank name is required';
+      if (!d.bloodBankEmail.trim()) e.bloodBankEmail = 'Blood bank email is required';
+      else if (!EMAIL_REGEX.test(d.bloodBankEmail)) e.bloodBankEmail = 'Invalid email format';
+      if (!d.bloodBankPhone.trim()) e.bloodBankPhone = 'Blood bank phone number is required';
+      else if (!PHONE_REGEX.test(d.bloodBankPhone)) e.bloodBankPhone = 'Phone must contain 10–15 digits only';
+      if (!d.bloodBankAddress.trim()) e.bloodBankAddress = 'Blood bank address is required';
     }
+
+    validatePincode(d, e);
+    validatePasswordFields(d, e);
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -143,79 +150,53 @@ function SignupForm() {
     }
   };
 
+  const isPersonalRole = activeRole === 'User' || activeRole === 'Donor';
+
   return (
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
       <RoleSelector activeRole={activeRole} onRoleChange={handleRoleChange} />
 
-      <CommonInput
-        id="name"
-        label="Full Name"
-        name="name"
-        value={formData.name}
-        onChange={handleChange}
-        error={errors.name}
-        placeholder="Enter your full name"
-      />
-
-      <CommonInput
-        id="email"
-        label="Email"
-        name="email"
-        type="email"
-        value={formData.email}
-        onChange={handleChange}
-        error={errors.email}
-        placeholder="Enter your email"
-      />
-
-      <CommonInput
-        id="phone"
-        label="Phone Number"
-        name="phone"
-        type="tel"
-        value={formData.phone}
-        onChange={handleChange}
-        error={errors.phone}
-        placeholder="Enter phone number"
-      />
-
-      <CommonInput
-        id="address"
-        label="Address"
-        name="address"
-        value={formData.address}
-        onChange={handleChange}
-        error={errors.address}
-        placeholder="Enter your address"
-      />
-
-      {(activeRole === 'User' || activeRole === 'Donor') && (
-        <CommonInput
-          id="pincode"
-          label="PIN Code"
-          name="pincode"
-          type="tel"
-          value={formData.pincode}
-          onChange={handleChange}
-          error={errors.pincode}
-          placeholder="Enter 6-digit PIN code"
-        />
-      )}
-
       <div key={activeRole} className="role-fields">
-        {(activeRole === 'User' || activeRole === 'Donor') && (
+        {isPersonalRole && (
           <>
-            {activeRole === 'Donor' && (
-              <CommonInput
-                id="city"
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                error={errors.city}
-                placeholder="Enter your city"
-              />
-            )}
+            <CommonInput
+              id="name"
+              label="Full Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="Enter your full name"
+            />
+            <CommonInput
+              id="email"
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="Enter your email"
+            />
+            <CommonInput
+              id="phone"
+              label="Phone Number"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              error={errors.phone}
+              placeholder="Enter phone number"
+            />
+            <CommonInput
+              id="address"
+              label="Address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              error={errors.address}
+              placeholder="Enter your address"
+            />
             <CommonInput
               id="bloodGroup"
               label="Blood Group"
@@ -252,13 +233,13 @@ function SignupForm() {
             />
             <CommonInput
               id="hospitalPhone"
-              label="Hospital Phone"
+              label="Hospital Phone Number"
               name="hospitalPhone"
               type="tel"
               value={formData.hospitalPhone}
               onChange={handleChange}
               error={errors.hospitalPhone}
-              placeholder="Enter hospital phone"
+              placeholder="Enter hospital phone number"
             />
             <CommonInput
               id="hospitalAddress"
@@ -269,61 +250,52 @@ function SignupForm() {
               error={errors.hospitalAddress}
               placeholder="Enter hospital address"
             />
-            <CommonInput
-              id="licenseNumber"
-              label="License Number"
-              name="licenseNumber"
-              value={formData.licenseNumber}
-              onChange={handleChange}
-              error={errors.licenseNumber}
-              placeholder="Enter license number"
-            />
           </>
         )}
 
         {activeRole === 'Blood Bank' && (
           <>
             <CommonInput
-              id="organizationName"
-              label="Organization Name"
-              name="organizationName"
-              value={formData.organizationName}
+              id="bloodBankName"
+              label="Blood Bank Name"
+              name="bloodBankName"
+              value={formData.bloodBankName}
               onChange={handleChange}
-              error={errors.organizationName}
-              placeholder="Enter organization name"
+              error={errors.bloodBankName}
+              placeholder="Enter blood bank name"
             />
             <CommonInput
-              id="organizationEmail"
-              label="Organization Email"
-              name="organizationEmail"
+              id="bloodBankEmail"
+              label="Blood Bank Email"
+              name="bloodBankEmail"
               type="email"
-              value={formData.organizationEmail}
+              value={formData.bloodBankEmail}
               onChange={handleChange}
-              error={errors.organizationEmail}
-              placeholder="Enter organization email"
+              error={errors.bloodBankEmail}
+              placeholder="Enter blood bank email"
             />
             <CommonInput
-              id="organizationPhone"
-              label="Organization Phone"
-              name="organizationPhone"
+              id="bloodBankPhone"
+              label="Blood Bank Phone Number"
+              name="bloodBankPhone"
               type="tel"
-              value={formData.organizationPhone}
+              value={formData.bloodBankPhone}
               onChange={handleChange}
-              error={errors.organizationPhone}
-              placeholder="Enter organization phone"
+              error={errors.bloodBankPhone}
+              placeholder="Enter blood bank phone number"
             />
             <CommonInput
-              id="organizationAddress"
-              label="Organization Address"
-              name="organizationAddress"
-              value={formData.organizationAddress}
+              id="bloodBankAddress"
+              label="Blood Bank Address"
+              name="bloodBankAddress"
+              value={formData.bloodBankAddress}
               onChange={handleChange}
-              error={errors.organizationAddress}
-              placeholder="Enter organization address"
+              error={errors.bloodBankAddress}
+              placeholder="Enter blood bank address"
             />
             <CommonInput
               id="licenseNumber"
-              label="License Number"
+              label="License Number (optional)"
               name="licenseNumber"
               value={formData.licenseNumber}
               onChange={handleChange}
@@ -333,6 +305,17 @@ function SignupForm() {
           </>
         )}
       </div>
+
+      <CommonInput
+        id="pincode"
+        label="Pincode"
+        name="pincode"
+        type="tel"
+        value={formData.pincode}
+        onChange={handleChange}
+        error={errors.pincode}
+        placeholder="Enter your pincode"
+      />
 
       <PasswordInput
         id="password"
