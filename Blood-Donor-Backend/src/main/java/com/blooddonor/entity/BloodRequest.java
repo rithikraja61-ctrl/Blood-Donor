@@ -4,6 +4,7 @@ import com.blooddonor.validation.BloodRequestStatus;
 import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.EmergencyLevel;
 import com.blooddonor.validation.Gender;
+import com.blooddonor.validation.RequesterType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,13 +35,21 @@ public class BloodRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "hospital_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RequesterType requesterType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hospital_id")
     private Hospital hospital;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "patient_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id")
     private Patient patient;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "donor_id", nullable = false)
@@ -94,6 +103,9 @@ public class BloodRequest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BloodRequestStatus status = BloodRequestStatus.PENDING;
+
+    @Column(nullable = false, length = 36)
+    private String requestGroupId;
 
     private LocalDateTime respondedAt;
     private LocalDateTime completedAt;

@@ -4,6 +4,7 @@ import com.blooddonor.validation.BloodRequestStatus;
 import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.EmergencyLevel;
 import com.blooddonor.validation.Gender;
+import com.blooddonor.validation.RequesterType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,6 +15,12 @@ import java.time.LocalDateTime;
 public class BloodRequestResponse {
 
     private Long id;
+    private String requestGroupId;
+    private RequesterType requesterType;
+    private String requesterName;
+    private String requesterAddress;
+    private String requesterCity;
+    private String requesterPinCode;
     private Long patientId;
     private Long donorId;
     private String donorName;

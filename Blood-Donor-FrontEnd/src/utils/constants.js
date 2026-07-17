@@ -45,5 +45,24 @@ export const ROUTES = {
   REGISTER: '/register',
   USER_HOME: '/user-home',
   FIND_DONOR: '/find-donor',
+  REQUEST_BLOOD: '/request-blood',
+  MY_REQUESTS: '/my-requests',
   PROFILE: '/profile',
+  DONOR_HOME: '/donor-home',
+  DONOR_REQUESTS: '/donor-requests',
+  DONOR_PROFILE: '/donor-profile',
+};
+
+export const EMERGENCY_LEVELS = [
+  { value: 'NORMAL', label: 'Normal' },
+  { value: 'URGENT', label: 'Urgent' },
+  { value: 'CRITICAL', label: 'Critical' },
+];
+
+export const BLOOD_REQUEST_STATUS_LABELS = {
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+  EXPIRED: 'Expired',
+  COMPLETED: 'Completed',
 };

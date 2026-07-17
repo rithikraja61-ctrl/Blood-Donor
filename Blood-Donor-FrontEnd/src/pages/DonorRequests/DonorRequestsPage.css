@@ -1,0 +1,19 @@
+.donor-requests-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.donor-requests-page__error {
+  color: var(--color-blood-red);
+  margin-bottom: 1rem;
+}
+
+.donor-requests-page__loading {
+  color: var(--landing-text-muted);
+}
+
+.donor-requests-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

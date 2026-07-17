@@ -30,6 +30,7 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   address: '',
+  city: '',
   bloodGroup: '',
   pincode: '',
   hospitalName: '',
@@ -99,6 +100,7 @@ function SignupForm() {
       if (!d.phone.trim()) e.phone = 'Phone number is required';
       else if (!PHONE_REGEX.test(d.phone)) e.phone = 'Phone must contain 10–15 digits only';
       if (!d.address.trim()) e.address = 'Address is required';
+      if (activeRole === 'Donor' && !d.city.trim()) e.city = 'City is required';
       if (!d.bloodGroup) e.bloodGroup = 'Blood group is required';
     }
 
@@ -197,6 +199,17 @@ function SignupForm() {
               error={errors.address}
               placeholder="Enter your address"
             />
+            {activeRole === 'Donor' && (
+              <CommonInput
+                id="city"
+                label="City"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                error={errors.city}
+                placeholder="Enter your city"
+              />
+            )}
             <CommonInput
               id="bloodGroup"
               label="Blood Group"

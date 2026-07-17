@@ -9,7 +9,7 @@ function buildSignupPayload(role, formData) {
   const pincode = formData.pincode.trim();
 
   if (role === 'User' || role === 'Donor') {
-    return {
+    const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
       phoneNumber: formData.phone.trim(),
@@ -18,6 +18,12 @@ function buildSignupPayload(role, formData) {
       bloodType: BLOOD_GROUP_TO_TYPE[formData.bloodGroup],
       pincode,
     };
+
+    if (role === 'Donor') {
+      payload.city = formData.city.trim();
+    }
+
+    return payload;
   }
 
   if (role === 'Hospital') {

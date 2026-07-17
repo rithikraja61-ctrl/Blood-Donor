@@ -1,6 +1,7 @@
 package com.blooddonor.dto.request;
 
 import com.blooddonor.validation.EmergencyLevel;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,10 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class SendBloodRequestDto {
-
-    @NotNull(message = "Patient id is required")
-    private Long patientId;
+public class UserSendBloodRequestDto {
 
     @NotBlank(message = "Contact person name is required")
     private String contactPersonName;
@@ -30,4 +28,7 @@ public class SendBloodRequestDto {
 
     @Size(max = 1000, message = "Reason must not exceed 1000 characters")
     private String reasonForBloodRequirement;
+
+    @Min(value = 1, message = "Units of blood required must be at least 1")
+    private int unitsOfBloodRequired = 1;
 }

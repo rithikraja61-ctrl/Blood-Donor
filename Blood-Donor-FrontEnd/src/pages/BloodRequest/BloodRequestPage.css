@@ -1,0 +1,79 @@
+.blood-request-page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.blood-request-page__profile {
+  background: var(--landing-bg-soft);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.blood-request-page__hint {
+  margin-top: 0.5rem;
+  color: var(--color-blood-red);
+  font-size: 0.9rem;
+}
+
+.blood-request-page__success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+.blood-request-page__error {
+  color: var(--color-blood-red);
+  margin-bottom: 1rem;
+}
+
+.blood-request-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--color-white);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.blood-request-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--landing-text);
+}
+
+.blood-request-page__field input,
+.blood-request-page__field select,
+.blood-request-page__field textarea {
+  font-weight: 400;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+}
+
+.blood-request-page__submit {
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  color: var(--color-white);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.blood-request-page__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/donors/search").hasAnyRole("USER", "DONOR", "HOSPITAL", "BLOOD_BANK")
+                        .requestMatchers(HttpMethod.GET, "/donors/search").hasAnyRole("USER", "HOSPITAL")
                         .requestMatchers("/users/**").hasRole("USER")
                         .requestMatchers("/donors/**").hasRole("DONOR")
                         .requestMatchers("/hospitals/**").hasRole("HOSPITAL")

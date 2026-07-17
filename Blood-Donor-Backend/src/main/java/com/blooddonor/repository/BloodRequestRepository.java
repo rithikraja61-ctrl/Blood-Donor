@@ -46,5 +46,24 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Long
 
     Optional<BloodRequest> findTopByPatientIdOrderByCreatedAtDesc(Long patientId);
 
+    List<BloodRequest> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    Optional<BloodRequest> findByIdAndUserId(Long id, Long userId);
+
+    boolean existsByUserIdAndDonorIdAndStatus(Long userId, Long donorId, BloodRequestStatus status);
+
     boolean existsByPatientIdAndDonorIdAndStatus(Long patientId, Long donorId, BloodRequestStatus status);
+
+    List<BloodRequest> findByRequestGroupIdAndStatus(String requestGroupId, BloodRequestStatus status);
+
+    long countByDonorIdAndStatus(Long donorId, BloodRequestStatus status);
+
+    @Query("""
+            SELECT COUNT(br) FROM BloodRequest br
+            WHERE br.donor.id = :donorId
+              AND br.status IN :statuses
+            """)
+    long countByDonorIdAndStatusIn(
+            @Param("donorId") Long donorId,
+            @Param("statuses") List<BloodRequestStatus> statuses);
 }
