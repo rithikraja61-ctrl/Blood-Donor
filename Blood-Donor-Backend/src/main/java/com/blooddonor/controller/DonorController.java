@@ -1,15 +1,15 @@
 package com.blooddonor.controller;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
+import com.blooddonor.dto.response.CursorDonorSearchResponse;
 import com.blooddonor.dto.response.DonorResponse;
-import com.blooddonor.dto.response.PagedDonorSearchResponse;
 import com.blooddonor.response.ApiResponse;
 import com.blooddonor.service.DonorService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,14 +32,17 @@ public class DonorController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PagedDonorSearchResponse>> searchDonors(
+    public ResponseEntity<ApiResponse<CursorDonorSearchResponse>> searchDonors(
             @RequestParam @NotBlank(message = "Blood group is required") String bloodGroup,
             @RequestParam("pinCode")
             @NotBlank(message = "PIN code is required")
             @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
             String pinCode,
-            @PageableDefault(page = 0, size = 10) Pageable pageable) {
-        PagedDonorSearchResponse response = donorService.searchDonors(bloodGroup, pinCode, pageable);
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit,
+            @RequestParam(required = false) String nextCursor,
+            @RequestParam(required = false) String previousCursor) {
+        CursorDonorSearchResponse response = donorService.searchDonors(
+                bloodGroup, pinCode, limit, nextCursor, previousCursor);
         return ResponseEntity.ok(ApiResponse.success("Donors fetched successfully", response));
     }
 
@@ -48,6 +51,9 @@ public class DonorController {
         DonorResponse response = donorService.getProfile();
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+
+    
 
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<DonorResponse>> updateProfile(
