@@ -39,6 +39,17 @@ function DonorRequestsPage() {
     loadRequests();
   }, [loadRequests]);
 
+  useEffect(() => {
+    const refreshOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadRequests();
+      }
+    };
+
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    return () => document.removeEventListener('visibilitychange', refreshOnFocus);
+  }, [loadRequests]);
+
   const handleAccept = async (requestId) => {
     setActionLoadingId(requestId);
     setError('');

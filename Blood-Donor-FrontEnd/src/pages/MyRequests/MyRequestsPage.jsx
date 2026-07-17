@@ -63,7 +63,6 @@ function MyRequestsPage() {
                 <span className="my-requests-page__date">{formatDateTime(req.createdAt)}</span>
               </div>
               <p><strong>Blood:</strong> {req.requiredBloodGroupDisplay}</p>
-              <p><strong>Units:</strong> {req.unitsOfBloodRequired}</p>
               <p><strong>Donor:</strong> {req.donorName || '—'}</p>
               <p><strong>Emergency:</strong> {req.emergencyLevel}</p>
               <p><strong>Required by:</strong> {formatDateTime(req.requiredBeforeDateTime)}</p>

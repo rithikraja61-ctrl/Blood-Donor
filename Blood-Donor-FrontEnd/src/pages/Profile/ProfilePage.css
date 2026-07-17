@@ -18,6 +18,27 @@
   font-size: 0.95rem;
 }
 
+.profile-page__error,
+.profile-page__loading {
+  color: var(--landing-text-muted);
+  margin-bottom: 1rem;
+}
+
+.profile-page__error {
+  color: var(--color-blood-red);
+}
+
+.profile-page__edit-btn {
+  margin-bottom: 1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  font-weight: 700;
+  color: var(--color-blood-red);
+  cursor: pointer;
+}
+
 .profile-page__logout-btn {
   margin-top: 1.25rem;
   width: 100%;

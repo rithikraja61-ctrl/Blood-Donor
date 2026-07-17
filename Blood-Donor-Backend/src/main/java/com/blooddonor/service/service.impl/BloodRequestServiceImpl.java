@@ -138,6 +138,8 @@ public class BloodRequestServiceImpl implements BloodRequestService {
                 ? request.getReasonForBloodRequirement()
                 : "Blood required";
 
+        expirePendingRequestsForUser(user.getId());
+
         String bloodGroup = user.getBloodType().getDisplayName();
         List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, user.getPincode());
 
@@ -149,11 +151,6 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         List<BloodRequestResponse> responses = new ArrayList<>();
 
         for (Donor donor : nearbyDonors) {
-            if (bloodRequestRepository.existsByUserIdAndDonorIdAndStatus(
-                    user.getId(), donor.getId(), BloodRequestStatus.PENDING)) {
-                continue;
-            }
-
             BloodRequest bloodRequest = buildUserBloodRequest(
                     requestGroupId, user, donor, reason, request);
             responses.add(bloodRequestMapper.toResponse(bloodRequestRepository.save(bloodRequest)));
@@ -251,6 +248,15 @@ public class BloodRequestServiceImpl implements BloodRequestService {
     public List<BloodRequestResponse> listIncomingForDonor() {
         Long donorId = securityUtil.getCurrentUserId();
         return bloodRequestRepository.findByDonorIdOrderByCreatedAtDesc(donorId).stream()
+                .sorted((a, b) -> {
+                    if (a.getStatus() == BloodRequestStatus.PENDING && b.getStatus() != BloodRequestStatus.PENDING) {
+                        return -1;
+                    }
+                    if (a.getStatus() != BloodRequestStatus.PENDING && b.getStatus() == BloodRequestStatus.PENDING) {
+                        return 1;
+                    }
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
                 .map(bloodRequestMapper::toResponse)
                 .toList();
     }
@@ -348,7 +354,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setPatientAge(0);
         bloodRequest.setPatientGender(Gender.OTHER);
         bloodRequest.setRequiredBloodGroup(user.getBloodType());
-        bloodRequest.setUnitsOfBloodRequired(request.getUnitsOfBloodRequired());
+        bloodRequest.setUnitsOfBloodRequired(1);
         bloodRequest.setReasonForBloodRequirement(reason);
         bloodRequest.setHospitalName(user.getName());
         bloodRequest.setHospitalAddress(user.getAddress());
@@ -360,6 +366,18 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setRequiredBeforeDateTime(request.getRequiredBeforeDateTime());
         bloodRequest.setStatus(BloodRequestStatus.PENDING);
         return bloodRequest;
+    }
+
+    private void expirePendingRequestsForUser(Long userId) {
+        List<BloodRequest> pendingRequests = bloodRequestRepository.findByUserIdAndStatus(
+                userId, BloodRequestStatus.PENDING);
+        LocalDateTime now = LocalDateTime.now();
+
+        for (BloodRequest pending : pendingRequests) {
+            pending.setStatus(BloodRequestStatus.EXPIRED);
+            pending.setRespondedAt(now);
+            bloodRequestRepository.save(pending);
+        }
     }
 
     private BloodRequest findPendingRequestForDonor(Long requestId) {

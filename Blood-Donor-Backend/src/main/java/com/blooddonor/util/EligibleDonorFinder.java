@@ -53,9 +53,21 @@ public class EligibleDonorFinder {
     }
 
     public List<Donor> findNearbyEligibleDonors(String bloodGroup, String pinCode) {
-        return findSortedEligibleDonors(bloodGroup, pinCode).stream()
+        BloodType requiredType = BloodType.fromDisplay(bloodGroup);
+        List<BloodType> compatibleTypes = BloodCompatibilityUtil.getCompatibleTypesInPriorityOrder(requiredType);
+        LocalDate cutoffDate = LocalDate.now().minusDays(DONATION_COOLDOWN_DAYS);
+
+        List<Donor> allEligible = donorRepository.findEligibleDonors(compatibleTypes, cutoffDate);
+
+        return allEligible.stream()
                 .filter(d -> PincodeProximityUtil.getDistancePriority(pinCode, d.getPincode())
                         != DistancePriority.FAR_PIN)
+                .sorted(Comparator
+                        .comparingInt((Donor d) -> PincodeProximityUtil.getDistanceRank(
+                                PincodeProximityUtil.getDistancePriority(pinCode, d.getPincode())))
+                        .thenComparingInt(d -> BloodCompatibilityUtil.getBloodPriority(requiredType, d.getBloodType()))
+                        .thenComparing(Donor::getLastDonationDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+                        .thenComparing(Donor::getId))
                 .toList();
     }
 

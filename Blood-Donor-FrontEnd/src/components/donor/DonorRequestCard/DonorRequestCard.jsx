@@ -15,7 +15,10 @@ function DonorRequestCard({ request, onAccept, onReject, actionLoadingId }) {
 
       <h3 className="donor-request-card__title">{request.patientName}</h3>
       <p className="donor-request-card__meta">
-        {request.requiredBloodGroupDisplay} · {request.unitsOfBloodRequired} unit(s)
+        {request.requiredBloodGroupDisplay}
+        {request.requesterType === 'HOSPITAL' && (
+          <span> · {request.unitsOfBloodRequired} unit(s)</span>
+        )}
       </p>
       <p className="donor-request-card__meta">
         Requester: {request.requesterName} ({request.requesterType})

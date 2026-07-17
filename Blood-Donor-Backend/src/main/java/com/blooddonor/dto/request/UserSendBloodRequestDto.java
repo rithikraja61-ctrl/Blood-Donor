@@ -1,7 +1,6 @@
 package com.blooddonor.dto.request;
 
 import com.blooddonor.validation.EmergencyLevel;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,7 +27,4 @@ public class UserSendBloodRequestDto {
 
     @Size(max = 1000, message = "Reason must not exceed 1000 characters")
     private String reasonForBloodRequirement;
-
-    @Min(value = 1, message = "Units of blood required must be at least 1")
-    private int unitsOfBloodRequired = 1;
 }

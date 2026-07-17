@@ -1,9 +1,17 @@
 import { apiRequest } from './apiClient';
 
+function toApiDateTime(value) {
+  if (!value) return value;
+  return value.length === 16 ? `${value}:00` : value;
+}
+
 export async function sendUserBloodRequest(payload) {
   const res = await apiRequest('/users/blood-requests', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      requiredBeforeDateTime: toApiDateTime(payload.requiredBeforeDateTime),
+    }),
   });
   return res.data;
 }
