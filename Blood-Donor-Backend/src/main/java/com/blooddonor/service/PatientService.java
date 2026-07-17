@@ -1,7 +1,6 @@
 package com.blooddonor.service;
 
 import com.blooddonor.dto.request.PatientCreateRequest;
-import com.blooddonor.dto.request.PatientTreatmentStatusUpdateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.response.PatientResponse;
 
@@ -13,7 +12,9 @@ public interface PatientService {
 
     List<PatientResponse> listPatientsForHospital();
 
+    PatientResponse getPatientById(Long patientId);
+
     PatientResponse updatePatient(Long patientId, PatientUpdateRequest request);
 
-    PatientResponse updateTreatmentStatus(Long patientId, PatientTreatmentStatusUpdateRequest request);
+    void deletePatient(Long patientId);
 }

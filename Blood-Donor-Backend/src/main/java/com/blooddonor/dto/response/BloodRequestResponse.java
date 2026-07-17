@@ -43,4 +43,6 @@ public class BloodRequestResponse {
     private LocalDateTime createdAt;
     private LocalDateTime respondedAt;
     private LocalDateTime completedAt;
+    private LocalDateTime requestSentDateTime;
+    private LocalDateTime responseDateTime;
 }

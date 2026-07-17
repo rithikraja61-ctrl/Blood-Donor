@@ -1,0 +1,57 @@
+.hospital-patients__error {
+  color: #c0392b;
+  margin-bottom: 1rem;
+}
+
+.hospital-patients__form {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.hospital-patients__form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hospital-patients__table-wrap {
+  overflow-x: auto;
+}
+
+.hospital-patients__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.hospital-patients__table th,
+.hospital-patients__table td {
+  border-bottom: 1px solid #eee;
+  padding: 0.65rem 0.5rem;
+  text-align: left;
+}
+
+.hospital-patients__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hospital-patients__actions button {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.hospital-patients__delete {
+  color: #c0392b;
+}
+
+.hospital-patients__link {
+  display: inline-block;
+  margin-top: 1rem;
+}

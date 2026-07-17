@@ -38,6 +38,8 @@ public class BloodRequestMapper {
                 .createdAt(request.getCreatedAt())
                 .respondedAt(request.getRespondedAt())
                 .completedAt(request.getCompletedAt())
+                .requestSentDateTime(request.getCreatedAt())
+                .responseDateTime(request.getRespondedAt())
                 .build();
     }
 }

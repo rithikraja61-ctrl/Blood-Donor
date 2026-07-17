@@ -33,6 +33,9 @@ function buildSignupPayload(role, formData) {
       phoneNumber: formData.hospitalPhone.trim(),
       password: formData.password,
       address: formData.hospitalAddress.trim(),
+      city: formData.hospitalCity.trim(),
+      state: formData.hospitalState.trim(),
+      licenseNumber: formData.hospitalLicenseNumber.trim(),
       pincode,
     };
   }
@@ -62,6 +65,9 @@ export function mapBackendFieldErrors(fieldErrors, role) {
     phoneNumber: 'hospitalPhone',
     address: 'hospitalAddress',
     pincode: 'pincode',
+    city: 'hospitalCity',
+    state: 'hospitalState',
+    licenseNumber: 'hospitalLicenseNumber',
   };
   const bloodBankMap = {
     name: 'bloodBankName',

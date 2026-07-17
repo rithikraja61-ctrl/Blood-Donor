@@ -1,7 +1,7 @@
 package com.blooddonor.repository;
 
 import com.blooddonor.entity.Patient;
-import com.blooddonor.validation.TreatmentStatus;
+import com.blooddonor.validation.PatientRequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,21 +20,17 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("""
             SELECT COUNT(p) FROM Patient p
             WHERE p.hospital.id = :hospitalId
-              AND p.treatmentStatus <> :completed
+              AND p.donorAssigned = false
             """)
-    long countPatientsWaitingForBlood(
-            @Param("hospitalId") Long hospitalId,
-            @Param("completed") TreatmentStatus completed);
-
-    long countByHospitalIdAndTreatmentStatus(Long hospitalId, TreatmentStatus treatmentStatus);
+    long countPatientsWaitingForBlood(@Param("hospitalId") Long hospitalId);
 
     @Query("""
             SELECT COUNT(p) FROM Patient p
             WHERE p.hospital.id = :hospitalId
-              AND p.donorAssigned = false
-              AND p.treatmentStatus <> :completed
+              AND p.donorAssigned = true
+              AND p.patientRequestStatus = :donorReceived
             """)
-    long countPatientsStillWaitingForDonors(
+    long countPatientsSuccessfullyReceivedBlood(
             @Param("hospitalId") Long hospitalId,
-            @Param("completed") TreatmentStatus completed);
+            @Param("donorReceived") PatientRequestStatus donorReceived);
 }

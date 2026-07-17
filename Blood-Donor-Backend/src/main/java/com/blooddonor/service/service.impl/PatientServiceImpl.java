@@ -1,11 +1,11 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.PatientCreateRequest;
-import com.blooddonor.dto.request.PatientTreatmentStatusUpdateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.response.PatientResponse;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.entity.Patient;
+import com.blooddonor.exception.BadRequestException;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.PatientMapper;
 import com.blooddonor.repository.BloodRequestRepository;
@@ -49,7 +49,7 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = patientMapper.toEntity(request);
         patient.setHospital(hospital);
         Patient saved = patientRepository.save(patient);
-        return patientMapper.toResponse(saved, hospital.getName(), null);
+        return patientMapper.toResponse(saved, null);
     }
 
     @Override
@@ -57,10 +57,15 @@ public class PatientServiceImpl implements PatientService {
         Hospital hospital = findCurrentHospital();
         return patientRepository.findByHospitalIdOrderByCreatedAtDesc(hospital.getId()).stream()
                 .map(patient -> patientMapper.toResponse(
-                        patient,
-                        hospital.getName(),
-                        resolveLatestRequestStatus(patient.getId())))
+                        patient, resolveLatestRequestStatus(patient.getId())))
                 .toList();
+    }
+
+    @Override
+    public PatientResponse getPatientById(Long patientId) {
+        Hospital hospital = findCurrentHospital();
+        Patient patient = findPatientForHospital(patientId, hospital.getId());
+        return patientMapper.toResponse(patient, resolveLatestRequestStatus(patient.getId()));
     }
 
     @Override
@@ -71,18 +76,20 @@ public class PatientServiceImpl implements PatientService {
         patientMapper.updateEntity(patient, request);
         Patient updated = patientRepository.save(patient);
         return patientMapper.toResponse(
-                updated, hospital.getName(), resolveLatestRequestStatus(updated.getId()));
+                updated, resolveLatestRequestStatus(updated.getId()));
     }
 
     @Override
     @Transactional
-    public PatientResponse updateTreatmentStatus(Long patientId, PatientTreatmentStatusUpdateRequest request) {
+    public void deletePatient(Long patientId) {
         Hospital hospital = findCurrentHospital();
         Patient patient = findPatientForHospital(patientId, hospital.getId());
-        patient.setTreatmentStatus(request.getTreatmentStatus());
-        Patient updated = patientRepository.save(patient);
-        return patientMapper.toResponse(
-                updated, hospital.getName(), resolveLatestRequestStatus(updated.getId()));
+
+        if (bloodRequestRepository.existsByPatientIdAndStatus(patientId, BloodRequestStatus.PENDING)) {
+            throw new BadRequestException("Cannot delete patient with a pending blood request");
+        }
+
+        patientRepository.delete(patient);
     }
 
     private BloodRequestStatus resolveLatestRequestStatus(Long patientId) {

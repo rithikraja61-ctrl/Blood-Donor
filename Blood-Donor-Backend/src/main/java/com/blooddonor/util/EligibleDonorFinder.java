@@ -58,4 +58,12 @@ public class EligibleDonorFinder {
                         != DistancePriority.FAR_PIN)
                 .toList();
     }
+
+    public boolean isEligibleSelectedDonor(String bloodGroup, String pinCode, Long donorId) {
+        if (donorId == null) {
+            return false;
+        }
+        return findSortedEligibleDonors(bloodGroup, pinCode).stream()
+                .anyMatch(d -> d.getId().equals(donorId));
+    }
 }

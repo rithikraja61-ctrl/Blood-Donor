@@ -2,6 +2,7 @@ package com.blooddonor.entity;
 
 import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.Gender;
+import com.blooddonor.validation.PatientRequestStatus;
 import com.blooddonor.validation.TreatmentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,6 +68,14 @@ public class Patient {
 
     @Column(nullable = false)
     private boolean donorAssigned = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_donor_id")
+    private Donor assignedDonor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PatientRequestStatus patientRequestStatus = PatientRequestStatus.WAITING;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

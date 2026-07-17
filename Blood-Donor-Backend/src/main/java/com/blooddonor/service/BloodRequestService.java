@@ -2,19 +2,24 @@ package com.blooddonor.service;
 
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
+import com.blooddonor.dto.response.AssignedDonorResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 
 import java.util.List;
 
 public interface BloodRequestService {
 
-    List<BloodRequestResponse> sendBloodRequests(SendBloodRequestDto request);
+    BloodRequestResponse sendBloodRequest(SendBloodRequestDto request);
 
     List<BloodRequestResponse> sendBloodRequestsForUser(UserSendBloodRequestDto request);
 
     List<BloodRequestResponse> listSentRequestsForHospital();
 
     BloodRequestResponse getRequestStatusForHospital(Long requestId);
+
+    AssignedDonorResponse getAssignedDonorForRequest(Long requestId);
+
+    AssignedDonorResponse getAssignedDonorForPatient(Long patientId);
 
     List<BloodRequestResponse> listSentRequestsForUser();
 

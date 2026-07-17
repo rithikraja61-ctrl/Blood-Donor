@@ -12,12 +12,9 @@ import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.service.HospitalService;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
-import com.blooddonor.validation.TreatmentStatus;
+import com.blooddonor.validation.PatientRequestStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 public class HospitalServiceImpl implements HospitalService {
@@ -69,20 +66,11 @@ public class HospitalServiceImpl implements HospitalService {
     @Override
     public HospitalDashboardResponse getDashboard() {
         Long hospitalId = findCurrentHospital().getId();
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
         return HospitalDashboardResponse.builder()
-                .totalBloodRequests(bloodRequestRepository.countByHospitalId(hospitalId))
-                .totalPatientsWaitingForBlood(patientRepository.countPatientsWaitingForBlood(
-                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
-                .totalPatientsSuccessfullyReceivedBlood(patientRepository.countByHospitalIdAndTreatmentStatus(
-                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
-                .totalPatientsStillWaitingForDonors(patientRepository.countPatientsStillWaitingForDonors(
-                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
-                .totalBloodDonationsCompletedToday(bloodRequestRepository.countCompletedTodayByHospital(
-                        hospitalId, BloodRequestStatus.COMPLETED, startOfDay, endOfDay))
+                .totalPatientsWaitingForBlood(patientRepository.countPatientsWaitingForBlood(hospitalId))
+                .totalPatientsSuccessfullyReceivedBlood(patientRepository.countPatientsSuccessfullyReceivedBlood(
+                        hospitalId, PatientRequestStatus.DONOR_RECEIVED))
                 .totalActiveDonorsWhoAcceptedRequests(bloodRequestRepository.countDistinctDonorsWithAcceptedRequests(
                         hospitalId, BloodRequestStatus.ACCEPTED))
                 .build();

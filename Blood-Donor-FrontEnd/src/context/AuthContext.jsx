@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY, ROLES, TYPE_TO_BLOOD_GROUP } from '../utils/constants';
 import { loginUser, registerUser } from '../services/authService';
 import { getUserProfile } from '../services/userService';
+import { getHospitalProfile } from '../services/hospitalService';
 import { ApiError } from '../services/apiClient';
 
 const AuthContext = createContext(null);
@@ -25,6 +26,9 @@ function mapProfileToUser(baseUser, profile) {
     phoneNumber: profile.phoneNumber ?? baseUser.phoneNumber,
     address: profile.address ?? baseUser.address,
     pincode: profile.pincode ?? baseUser.pincode,
+    city: profile.city ?? baseUser.city,
+    state: profile.state ?? baseUser.state,
+    licenseNumber: profile.licenseNumber ?? baseUser.licenseNumber,
     bloodGroup: profile.bloodType
       ? TYPE_TO_BLOOD_GROUP[profile.bloodType] || profile.bloodType
       : baseUser.bloodGroup,
@@ -68,16 +72,25 @@ export function AuthProvider({ children }) {
   }, []);
 
   const hydrateUserProfile = useCallback(async (authData) => {
-    if (authData.role !== ROLES.USER) {
-      return persistAuth(authData);
+    if (authData.role === ROLES.USER) {
+      try {
+        const profile = await getUserProfile();
+        return persistAuth(authData, profile);
+      } catch {
+        return persistAuth(authData);
+      }
     }
 
-    try {
-      const profile = await getUserProfile();
-      return persistAuth(authData, profile);
-    } catch {
-      return persistAuth(authData);
+    if (authData.role === ROLES.HOSPITAL) {
+      try {
+        const profile = await getHospitalProfile();
+        return persistAuth(authData, profile);
+      } catch {
+        return persistAuth(authData);
+      }
     }
+
+    return persistAuth(authData);
   }, [persistAuth]);
 
   const login = async (role, email, password) => {
@@ -87,7 +100,7 @@ export function AuthProvider({ children }) {
 
   const register = async (role, formData) => {
     const data = await registerUser(role, formData);
-    return persistAuth(data);
+    return hydrateUserProfile(data);
   };
 
   const logout = useCallback(() => {
@@ -109,6 +122,9 @@ export function AuthProvider({ children }) {
 
         if (storedUser?.role === ROLES.USER) {
           const profile = await getUserProfile();
+          persistAuth({ token: storedToken, ...storedUser }, profile);
+        } else if (storedUser?.role === ROLES.HOSPITAL) {
+          const profile = await getHospitalProfile();
           persistAuth({ token: storedToken, ...storedUser }, profile);
         }
       } catch (err) {

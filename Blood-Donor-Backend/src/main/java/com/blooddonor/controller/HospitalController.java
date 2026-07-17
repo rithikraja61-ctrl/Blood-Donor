@@ -2,9 +2,9 @@ package com.blooddonor.controller;
 
 import com.blooddonor.dto.request.HospitalUpdateRequest;
 import com.blooddonor.dto.request.PatientCreateRequest;
-import com.blooddonor.dto.request.PatientTreatmentStatusUpdateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
+import com.blooddonor.dto.response.AssignedDonorResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.HospitalDashboardResponse;
 import com.blooddonor.dto.response.HospitalResponse;
@@ -83,6 +83,13 @@ public class HospitalController {
         return ResponseEntity.ok(ApiResponse.success("Patients fetched successfully", response));
     }
 
+    @GetMapping("/patients/{patientId}")
+    public ResponseEntity<ApiResponse<PatientResponse>> getPatient(
+            @PathVariable Long patientId) {
+        PatientResponse response = patientService.getPatientById(patientId);
+        return ResponseEntity.ok(ApiResponse.success("Patient fetched successfully", response));
+    }
+
     @PutMapping("/patients/{patientId}")
     public ResponseEntity<ApiResponse<PatientResponse>> updatePatient(
             @PathVariable Long patientId,
@@ -91,20 +98,25 @@ public class HospitalController {
         return ResponseEntity.ok(ApiResponse.success("Patient updated successfully", response));
     }
 
-    @PutMapping("/patients/{patientId}/treatment-status")
-    public ResponseEntity<ApiResponse<PatientResponse>> updateTreatmentStatus(
-            @PathVariable Long patientId,
-            @Valid @RequestBody PatientTreatmentStatusUpdateRequest request) {
-        PatientResponse response = patientService.updateTreatmentStatus(patientId, request);
-        return ResponseEntity.ok(ApiResponse.success("Treatment status updated successfully", response));
+    @DeleteMapping("/patients/{patientId}")
+    public ResponseEntity<ApiResponse<Void>> deletePatient(@PathVariable Long patientId) {
+        patientService.deletePatient(patientId);
+        return ResponseEntity.ok(ApiResponse.success("Patient deleted successfully"));
+    }
+
+    @GetMapping("/patients/{patientId}/assigned-donor")
+    public ResponseEntity<ApiResponse<AssignedDonorResponse>> getAssignedDonorForPatient(
+            @PathVariable Long patientId) {
+        AssignedDonorResponse response = bloodRequestService.getAssignedDonorForPatient(patientId);
+        return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
     }
 
     @PostMapping("/blood-requests")
-    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> sendBloodRequests(
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> sendBloodRequest(
             @Valid @RequestBody SendBloodRequestDto request) {
-        List<BloodRequestResponse> response = bloodRequestService.sendBloodRequests(request);
+        BloodRequestResponse response = bloodRequestService.sendBloodRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Blood request(s) sent successfully", response));
+                .body(ApiResponse.success("Blood request sent successfully", response));
     }
 
     @GetMapping("/blood-requests")
@@ -114,9 +126,23 @@ public class HospitalController {
     }
 
     @GetMapping("/blood-requests/{requestId}")
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> getBloodRequestDetails(
+            @PathVariable Long requestId) {
+        BloodRequestResponse response = bloodRequestService.getRequestStatusForHospital(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request fetched successfully", response));
+    }
+
+    @GetMapping("/blood-requests/{requestId}/status")
     public ResponseEntity<ApiResponse<BloodRequestResponse>> getBloodRequestStatus(
             @PathVariable Long requestId) {
         BloodRequestResponse response = bloodRequestService.getRequestStatusForHospital(requestId);
         return ResponseEntity.ok(ApiResponse.success("Blood request status fetched successfully", response));
+    }
+
+    @GetMapping("/blood-requests/{requestId}/assigned-donor")
+    public ResponseEntity<ApiResponse<AssignedDonorResponse>> getAssignedDonorForRequest(
+            @PathVariable Long requestId) {
+        AssignedDonorResponse response = bloodRequestService.getAssignedDonorForRequest(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
     }
 }

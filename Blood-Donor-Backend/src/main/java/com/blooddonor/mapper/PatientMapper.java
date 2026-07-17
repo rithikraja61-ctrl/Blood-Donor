@@ -5,6 +5,7 @@ import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.response.PatientResponse;
 import com.blooddonor.entity.Patient;
 import com.blooddonor.validation.BloodRequestStatus;
+import com.blooddonor.validation.PatientRequestStatus;
 import com.blooddonor.validation.TreatmentStatus;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +25,11 @@ public class PatientMapper {
         patient.setRequiredBeforeDate(request.getRequiredBeforeDate());
         patient.setTreatmentStatus(TreatmentStatus.WAITING);
         patient.setDonorAssigned(false);
+        patient.setPatientRequestStatus(PatientRequestStatus.WAITING);
         return patient;
     }
 
-    public PatientResponse toResponse(Patient patient, String hospitalName, BloodRequestStatus requestStatus) {
+    public PatientResponse toResponse(Patient patient, BloodRequestStatus latestBloodRequestStatus) {
         return PatientResponse.builder()
                 .id(patient.getId())
                 .patientName(patient.getPatientName())
@@ -35,13 +37,12 @@ public class PatientMapper {
                 .gender(patient.getGender())
                 .bloodType(patient.getBloodType())
                 .bloodGroup(patient.getBloodType().getDisplayName())
-                .unitsRequired(patient.getUnitsRequired())
                 .reasonForBlood(patient.getReasonForBlood())
                 .requiredBeforeDate(patient.getRequiredBeforeDate())
-                .hospitalName(hospitalName)
-                .requestStatus(requestStatus)
                 .donorAssigned(patient.isDonorAssigned())
-                .treatmentStatus(patient.getTreatmentStatus())
+                .assignedDonorId(patient.getAssignedDonor() != null ? patient.getAssignedDonor().getId() : null)
+                .patientRequestStatus(patient.getPatientRequestStatus())
+                .latestBloodRequestStatus(latestBloodRequestStatus)
                 .build();
     }
 

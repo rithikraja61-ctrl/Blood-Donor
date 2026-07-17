@@ -2,6 +2,7 @@ package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
+import com.blooddonor.dto.response.AssignedDonorResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.entity.BloodRequest;
 import com.blooddonor.entity.Donor;
@@ -12,6 +13,7 @@ import com.blooddonor.exception.BadRequestException;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.BloodRequestMapper;
 import com.blooddonor.repository.BloodRequestRepository;
+import com.blooddonor.repository.DonorRepository;
 import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.repository.UserRepository;
@@ -20,6 +22,7 @@ import com.blooddonor.util.EligibleDonorFinder;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
 import com.blooddonor.validation.Gender;
+import com.blooddonor.validation.PatientRequestStatus;
 import com.blooddonor.validation.RequesterType;
 import com.blooddonor.validation.TreatmentStatus;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final HospitalRepository hospitalRepository;
     private final PatientRepository patientRepository;
+    private final DonorRepository donorRepository;
     private final UserRepository userRepository;
     private final BloodRequestMapper bloodRequestMapper;
     private final SecurityUtil securityUtil;
@@ -46,6 +50,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
             BloodRequestRepository bloodRequestRepository,
             HospitalRepository hospitalRepository,
             PatientRepository patientRepository,
+            DonorRepository donorRepository,
             UserRepository userRepository,
             BloodRequestMapper bloodRequestMapper,
             SecurityUtil securityUtil,
@@ -53,6 +58,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         this.bloodRequestRepository = bloodRequestRepository;
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
+        this.donorRepository = donorRepository;
         this.userRepository = userRepository;
         this.bloodRequestMapper = bloodRequestMapper;
         this.securityUtil = securityUtil;
@@ -61,42 +67,57 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
     @Override
     @Transactional
-    public List<BloodRequestResponse> sendBloodRequests(SendBloodRequestDto request) {
+    public BloodRequestResponse sendBloodRequest(SendBloodRequestDto request) {
         Hospital hospital = findCurrentHospital();
         Patient patient = patientRepository.findByIdAndHospitalId(request.getPatientId(), hospital.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+
+        applyPatientOverridesFromRequest(patient, request);
+        patientRepository.save(patient);
+
+        Long selectedDonorId = request.getSelectedDonorId();
+        String bloodGroup = patient.getBloodType().getDisplayName();
+
+        if (!eligibleDonorFinder.isEligibleSelectedDonor(bloodGroup, hospital.getPincode(), selectedDonorId)) {
+            throw new BadRequestException(
+                    "Selected donor is not eligible. Search donors again and pick a donor from the results.");
+        }
+
+        if (bloodRequestRepository.existsByPatientIdAndDonorIdAndStatus(
+                patient.getId(), selectedDonorId, BloodRequestStatus.PENDING)) {
+            throw new BadRequestException("A pending request already exists for this patient and donor");
+        }
+
+        Donor donor = donorRepository.findById(selectedDonorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found: " + selectedDonorId));
 
         String reason = request.getReasonForBloodRequirement() != null
                 && !request.getReasonForBloodRequirement().isBlank()
                 ? request.getReasonForBloodRequirement()
                 : patient.getReasonForBlood();
 
-        String bloodGroup = patient.getBloodType().getDisplayName();
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, hospital.getPincode());
+        BloodRequest bloodRequest = buildHospitalBloodRequest(
+                UUID.randomUUID().toString(), hospital, patient, donor, reason, request);
+        BloodRequest saved = bloodRequestRepository.save(bloodRequest);
+        return bloodRequestMapper.toResponse(saved);
+    }
 
-        if (nearbyDonors.isEmpty()) {
-            throw new BadRequestException("No eligible donors found nearby");
+    private void applyPatientOverridesFromRequest(Patient patient, SendBloodRequestDto request) {
+        if (request.getPatientName() != null && !request.getPatientName().isBlank()) {
+            patient.setPatientName(request.getPatientName());
         }
-
-        String requestGroupId = UUID.randomUUID().toString();
-        List<BloodRequestResponse> responses = new ArrayList<>();
-
-        for (Donor donor : nearbyDonors) {
-            if (bloodRequestRepository.existsByPatientIdAndDonorIdAndStatus(
-                    patient.getId(), donor.getId(), BloodRequestStatus.PENDING)) {
-                continue;
-            }
-
-            BloodRequest bloodRequest = buildHospitalBloodRequest(
-                    requestGroupId, hospital, patient, donor, reason, request);
-            responses.add(bloodRequestMapper.toResponse(bloodRequestRepository.save(bloodRequest)));
+        if (request.getPatientAge() != null) {
+            patient.setAge(request.getPatientAge());
         }
-
-        if (responses.isEmpty()) {
-            throw new BadRequestException("No eligible donors found nearby");
+        if (request.getPatientGender() != null) {
+            patient.setGender(request.getPatientGender());
         }
-
-        return responses;
+        if (request.getRequiredBloodGroup() != null) {
+            patient.setBloodType(request.getRequiredBloodGroup());
+        }
+        if (request.getReasonForBloodRequirement() != null && !request.getReasonForBloodRequirement().isBlank()) {
+            patient.setReasonForBlood(request.getReasonForBloodRequirement());
+        }
     }
 
     @Override
@@ -162,6 +183,55 @@ public class BloodRequestServiceImpl implements BloodRequestService {
     }
 
     @Override
+    public AssignedDonorResponse getAssignedDonorForRequest(Long requestId) {
+        Long hospitalId = findCurrentHospital().getId();
+        BloodRequest request = bloodRequestRepository.findByIdAndHospitalId(requestId, hospitalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Blood request not found"));
+
+        if (request.getStatus() != BloodRequestStatus.ACCEPTED
+                && request.getStatus() != BloodRequestStatus.COMPLETED) {
+            throw new BadRequestException("Donor is not assigned until the request is accepted");
+        }
+
+        return toAssignedDonorResponse(request);
+    }
+
+    @Override
+    public AssignedDonorResponse getAssignedDonorForPatient(Long patientId) {
+        Hospital hospital = findCurrentHospital();
+        Patient patient = patientRepository.findByIdAndHospitalId(patientId, hospital.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+
+        if (!patient.isDonorAssigned() || patient.getAssignedDonor() == null) {
+            throw new BadRequestException("No donor assigned to this patient yet");
+        }
+
+        BloodRequest acceptedRequest = bloodRequestRepository
+                .findTopByPatientIdAndStatusOrderByCreatedAtDesc(patientId, BloodRequestStatus.ACCEPTED)
+                .or(() -> bloodRequestRepository.findTopByPatientIdAndStatusOrderByCreatedAtDesc(
+                        patientId, BloodRequestStatus.COMPLETED))
+                .orElseThrow(() -> new ResourceNotFoundException("Accepted blood request not found for patient"));
+
+        return toAssignedDonorResponse(acceptedRequest);
+    }
+
+    private AssignedDonorResponse toAssignedDonorResponse(BloodRequest request) {
+        Donor donor = request.getDonor();
+        return AssignedDonorResponse.builder()
+                .donorId(donor.getId())
+                .donorName(donor.getName())
+                .email(donor.getEmail())
+                .phoneNumber(donor.getPhoneNumber())
+                .bloodType(donor.getBloodType())
+                .bloodGroup(donor.getBloodType().getDisplayName())
+                .city(donor.getCity())
+                .pincode(donor.getPincode())
+                .bloodRequestId(request.getId())
+                .bloodRequestStatus(request.getStatus().name())
+                .build();
+    }
+
+    @Override
     public List<BloodRequestResponse> listSentRequestsForUser() {
         Long userId = findCurrentUser().getId();
         return bloodRequestRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
@@ -196,7 +266,10 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
         Patient patient = request.getPatient();
         if (patient != null) {
+            Donor acceptingDonor = request.getDonor();
             patient.setDonorAssigned(true);
+            patient.setAssignedDonor(acceptingDonor);
+            patient.setPatientRequestStatus(PatientRequestStatus.DONOR_RECEIVED);
             if (patient.getTreatmentStatus() == TreatmentStatus.WAITING) {
                 patient.setTreatmentStatus(TreatmentStatus.BLOOD_ARRANGED);
             }
@@ -252,8 +325,8 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setHospitalAddress(hospital.getAddress());
         bloodRequest.setHospitalCity(hospital.getCity());
         bloodRequest.setHospitalPinCode(hospital.getPincode());
-        bloodRequest.setContactPersonName(request.getContactPersonName());
-        bloodRequest.setContactPhoneNumber(request.getContactPhoneNumber());
+        bloodRequest.setContactPersonName(hospital.getName());
+        bloodRequest.setContactPhoneNumber(hospital.getPhoneNumber());
         bloodRequest.setEmergencyLevel(request.getEmergencyLevel());
         bloodRequest.setRequiredBeforeDateTime(request.getRequiredBeforeDateTime());
         bloodRequest.setStatus(BloodRequestStatus.PENDING);

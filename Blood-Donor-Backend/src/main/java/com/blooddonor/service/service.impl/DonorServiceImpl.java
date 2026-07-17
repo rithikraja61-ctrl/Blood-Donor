@@ -173,6 +173,7 @@ public class DonorServiceImpl implements DonorService {
 
     private DonorSearchResponse toSearchResponse(Donor donor, String searchPin) {
         return DonorSearchResponse.builder()
+                .id(donor.getId())
                 .name(donor.getName())
                 .bloodGroup(donor.getBloodType().getDisplayName())
                 .city(donor.getCity())

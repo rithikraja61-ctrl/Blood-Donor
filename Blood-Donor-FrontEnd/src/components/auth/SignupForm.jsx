@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ApiError } from '../../services/apiClient';
 import { mapBackendFieldErrors } from '../../services/authService';
+import { getPostLoginRoute } from '../../utils/roleRoutes';
 import RoleSelector from './RoleSelector';
 import CommonInput from './CommonInput';
 import PasswordInput from './PasswordInput';
@@ -37,6 +38,9 @@ const INITIAL_FORM = {
   hospitalEmail: '',
   hospitalPhone: '',
   hospitalAddress: '',
+  hospitalCity: '',
+  hospitalState: '',
+  hospitalLicenseNumber: '',
   bloodBankName: '',
   bloodBankEmail: '',
   bloodBankPhone: '',
@@ -111,6 +115,9 @@ function SignupForm() {
       if (!d.hospitalPhone.trim()) e.hospitalPhone = 'Hospital phone number is required';
       else if (!PHONE_REGEX.test(d.hospitalPhone)) e.hospitalPhone = 'Phone must contain 10–15 digits only';
       if (!d.hospitalAddress.trim()) e.hospitalAddress = 'Hospital address is required';
+      if (!d.hospitalCity.trim()) e.hospitalCity = 'City is required';
+      if (!d.hospitalState.trim()) e.hospitalState = 'State is required';
+      if (!d.hospitalLicenseNumber.trim()) e.hospitalLicenseNumber = 'License number is required';
     }
 
     if (activeRole === 'Blood Bank') {
@@ -138,8 +145,8 @@ function SignupForm() {
     setLoading(true);
 
     try {
-      await register(activeRole, formData);
-      navigate('/');
+      const authUser = await register(activeRole, formData);
+      navigate(getPostLoginRoute(authUser.role), { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.fieldErrors) {
         setErrors(mapBackendFieldErrors(err.fieldErrors, activeRole));
@@ -262,6 +269,33 @@ function SignupForm() {
               onChange={handleChange}
               error={errors.hospitalAddress}
               placeholder="Enter hospital address"
+            />
+            <CommonInput
+              id="hospitalCity"
+              label="City"
+              name="hospitalCity"
+              value={formData.hospitalCity}
+              onChange={handleChange}
+              error={errors.hospitalCity}
+              placeholder="Enter city"
+            />
+            <CommonInput
+              id="hospitalState"
+              label="State"
+              name="hospitalState"
+              value={formData.hospitalState}
+              onChange={handleChange}
+              error={errors.hospitalState}
+              placeholder="Enter state"
+            />
+            <CommonInput
+              id="hospitalLicenseNumber"
+              label="License Number"
+              name="hospitalLicenseNumber"
+              value={formData.hospitalLicenseNumber}
+              onChange={handleChange}
+              error={errors.hospitalLicenseNumber}
+              placeholder="Enter license number"
             />
           </>
         )}

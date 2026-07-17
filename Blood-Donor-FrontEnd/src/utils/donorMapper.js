@@ -6,7 +6,7 @@ const DISTANCE_LABELS = {
 
 export function mapDonorFromApi(donor, index) {
   return {
-    id: `${donor.name}-${donor.pinCode}-${index}`,
+    id: donor.id ?? `${donor.name}-${donor.pinCode}-${index}`,
     name: donor.name,
     bloodGroup: donor.bloodGroup,
     pincode: donor.pinCode,

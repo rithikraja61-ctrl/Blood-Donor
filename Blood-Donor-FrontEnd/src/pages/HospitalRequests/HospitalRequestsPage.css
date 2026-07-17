@@ -1,0 +1,25 @@
+.hospital-requests__error {
+  color: #c0392b;
+}
+
+.hospital-requests__table-wrap {
+  overflow-x: auto;
+}
+
+.hospital-requests__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.hospital-requests__table th,
+.hospital-requests__table td {
+  border-bottom: 1px solid #eee;
+  padding: 0.6rem 0.45rem;
+  text-align: left;
+}
+
+.hospital-requests__refresh {
+  margin-top: 1rem;
+  cursor: pointer;
+}
