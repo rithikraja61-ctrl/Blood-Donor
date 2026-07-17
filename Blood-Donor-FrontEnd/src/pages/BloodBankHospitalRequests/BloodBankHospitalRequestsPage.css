@@ -1,0 +1,36 @@
+.blood-bank-requests__success {
+  color: #1a7f4b;
+  margin-bottom: 0.75rem;
+}
+
+.blood-bank-requests__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.blood-bank-requests__approve,
+.blood-bank-requests__reject {
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.blood-bank-requests__approve {
+  background: var(--color-blood-red);
+  color: #fff;
+}
+
+.blood-bank-requests__reject {
+  background: #fdecea;
+  color: #b42318;
+}
+
+.blood-bank-requests__approve:disabled,
+.blood-bank-requests__reject:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

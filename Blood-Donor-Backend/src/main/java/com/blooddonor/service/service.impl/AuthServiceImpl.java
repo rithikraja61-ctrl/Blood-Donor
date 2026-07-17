@@ -23,6 +23,7 @@ import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.UserRepository;
 import com.blooddonor.security.CustomUserDetails;
 import com.blooddonor.service.AuthService;
+import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.util.JwtUtil;
 import com.blooddonor.validation.Role;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final DonorMapper donorMapper;
     private final HospitalMapper hospitalMapper;
     private final BloodBankMapper bloodBankMapper;
+    private final BloodBankInventoryService bloodBankInventoryService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -55,6 +57,7 @@ public class AuthServiceImpl implements AuthService {
             DonorMapper donorMapper,
             HospitalMapper hospitalMapper,
             BloodBankMapper bloodBankMapper,
+            BloodBankInventoryService bloodBankInventoryService,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
             AuthenticationManager authenticationManager) {
@@ -66,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
         this.donorMapper = donorMapper;
         this.hospitalMapper = hospitalMapper;
         this.bloodBankMapper = bloodBankMapper;
+        this.bloodBankInventoryService = bloodBankInventoryService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
@@ -119,6 +123,7 @@ public class AuthServiceImpl implements AuthService {
         BloodBank bloodBank = bloodBankMapper.toEntity(request);
         bloodBank.setPassword(passwordEncoder.encode(request.getPassword()));
         BloodBank savedBloodBank = bloodBankRepository.save(bloodBank);
+        bloodBankInventoryService.initializeInventoryForBloodBank(savedBloodBank.getId());
 
         return buildAuthResponse(savedBloodBank);
     }

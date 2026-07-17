@@ -2,7 +2,7 @@ export const POST_LOGIN_ROUTES = {
   USER: '/user-home',
   DONOR: '/donor-home',
   HOSPITAL: '/hospital-home',
-  BLOOD_BANK: '/',
+  BLOOD_BANK: '/blood-bank-home',
   ADMIN: '/',
 };
   

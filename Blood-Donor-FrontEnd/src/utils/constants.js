@@ -56,6 +56,12 @@ export const ROUTES = {
   HOSPITAL_PATIENTS: '/hospital-patients',
   HOSPITAL_SEND_REQUEST: '/hospital/send-request',
   HOSPITAL_REQUESTS: '/hospital-requests',
+  HOSPITAL_BLOOD_BANK_REQUEST: '/hospital/blood-bank-request',
+  BLOOD_BANK_HOME: '/blood-bank-home',
+  BLOOD_BANK_PROFILE: '/blood-bank-profile',
+  BLOOD_BANK_INVENTORY: '/blood-bank-inventory',
+  BLOOD_BANK_HOSPITAL_REQUESTS: '/blood-bank-hospital-requests',
+  BLOOD_BANK_ISSUE_HISTORY: '/blood-bank-issue-history',
 };
 
 export const EMERGENCY_LEVELS = [
@@ -75,4 +81,12 @@ export const BLOOD_REQUEST_STATUS_LABELS = {
   REJECTED: 'Rejected',
   EXPIRED: 'Expired',
   COMPLETED: 'Completed',
+};
+
+export const HOSPITAL_BLOOD_BANK_REQUEST_STATUS_LABELS = {
+  PENDING: 'Pending',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected',
+  COMPLETED: 'Completed',
+  EXPIRED: 'Expired',
 };

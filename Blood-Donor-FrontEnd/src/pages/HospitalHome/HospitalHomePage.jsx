@@ -72,6 +72,10 @@ function HospitalHomePage() {
           <span className="donor-home__card-icon" aria-hidden="true">📤</span>
           <span className="donor-home__card-label">Send blood request</span>
         </Link>
+        <Link to={ROUTES.HOSPITAL_BLOOD_BANK_REQUEST} className="donor-home__card">
+          <span className="donor-home__card-icon" aria-hidden="true">🏦</span>
+          <span className="donor-home__card-label">Blood bank request</span>
+        </Link>
         <Link to={ROUTES.HOSPITAL_REQUESTS} className="donor-home__card">
           <span className="donor-home__card-icon" aria-hidden="true">📋</span>
           <span className="donor-home__card-label">Sent requests</span>

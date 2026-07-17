@@ -19,7 +19,14 @@ import HospitalHomePage from '../pages/HospitalHome/HospitalHomePage';
 import HospitalProfilePage from '../pages/HospitalProfile/HospitalProfilePage';
 import HospitalPatientsPage from '../pages/HospitalPatients/HospitalPatientsPage';
 import HospitalSendRequestPage from '../pages/HospitalSendRequest/HospitalSendRequestPage';
+import HospitalBloodBankRequestPage from '../pages/HospitalBloodBankRequest/HospitalBloodBankRequestPage';
 import HospitalRequestsPage from '../pages/HospitalRequests/HospitalRequestsPage';
+import BloodBankModuleLayout from '../layouts/BloodBankModuleLayout';
+import BloodBankHomePage from '../pages/BloodBankHome/BloodBankHomePage';
+import BloodBankProfilePage from '../pages/BloodBankProfile/BloodBankProfilePage';
+import BloodBankInventoryPage from '../pages/BloodBankInventory/BloodBankInventoryPage';
+import BloodBankHospitalRequestsPage from '../pages/BloodBankHospitalRequests/BloodBankHospitalRequestsPage';
+import BloodBankIssueHistoryPage from '../pages/BloodBankIssueHistory/BloodBankIssueHistoryPage';
 
 function AppRoutes() {
   return (
@@ -65,7 +72,22 @@ function AppRoutes() {
         <Route path="/hospital-profile" element={<HospitalProfilePage />} />
         <Route path="/hospital-patients" element={<HospitalPatientsPage />} />
         <Route path="/hospital/send-request" element={<HospitalSendRequestPage />} />
+        <Route path="/hospital/blood-bank-request" element={<HospitalBloodBankRequestPage />} />
         <Route path="/hospital-requests" element={<HospitalRequestsPage />} />
+      </Route>
+
+      <Route
+        element={(
+          <ProtectedRoute allowedRoles={[ROLES.BLOOD_BANK]}>
+            <BloodBankModuleLayout />
+          </ProtectedRoute>
+        )}
+      >
+        <Route path="/blood-bank-home" element={<BloodBankHomePage />} />
+        <Route path="/blood-bank-profile" element={<BloodBankProfilePage />} />
+        <Route path="/blood-bank-inventory" element={<BloodBankInventoryPage />} />
+        <Route path="/blood-bank-hospital-requests" element={<BloodBankHospitalRequestsPage />} />
+        <Route path="/blood-bank-issue-history" element={<BloodBankIssueHistoryPage />} />
       </Route>
     </Routes>
   );

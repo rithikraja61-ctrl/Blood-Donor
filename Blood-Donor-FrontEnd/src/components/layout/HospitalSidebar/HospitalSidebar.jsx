@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', to: ROUTES.HOSPITAL_HOME },
   { label: 'Patients', to: ROUTES.HOSPITAL_PATIENTS },
   { label: 'Send Blood Request', to: ROUTES.HOSPITAL_SEND_REQUEST },
+  { label: 'Blood Bank Request', to: ROUTES.HOSPITAL_BLOOD_BANK_REQUEST },
   { label: 'Sent Requests', to: ROUTES.HOSPITAL_REQUESTS },
   { label: 'Profile', to: ROUTES.HOSPITAL_PROFILE },
 ];

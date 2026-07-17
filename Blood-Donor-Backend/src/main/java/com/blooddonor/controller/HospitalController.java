@@ -1,5 +1,6 @@
 package com.blooddonor.controller;
 
+import com.blooddonor.dto.request.CreateHospitalRequestDto;
 import com.blooddonor.dto.request.HospitalUpdateRequest;
 import com.blooddonor.dto.request.PatientCreateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
@@ -7,9 +8,11 @@ import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.HospitalDashboardResponse;
+import com.blooddonor.dto.response.HospitalRequestResponse;
 import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.dto.response.PatientResponse;
 import com.blooddonor.response.ApiResponse;
+import com.blooddonor.service.BloodBankHospitalRequestService;
 import com.blooddonor.service.BloodRequestService;
 import com.blooddonor.service.HospitalService;
 import com.blooddonor.service.PatientService;
@@ -34,14 +37,17 @@ public class HospitalController {
     private final HospitalService hospitalService;
     private final PatientService patientService;
     private final BloodRequestService bloodRequestService;
+    private final BloodBankHospitalRequestService bloodBankHospitalRequestService;
 
     public HospitalController(
             HospitalService hospitalService,
             PatientService patientService,
-            BloodRequestService bloodRequestService) {
+            BloodRequestService bloodRequestService,
+            BloodBankHospitalRequestService bloodBankHospitalRequestService) {
         this.hospitalService = hospitalService;
         this.patientService = patientService;
         this.bloodRequestService = bloodRequestService;
+        this.bloodBankHospitalRequestService = bloodBankHospitalRequestService;
     }
 
     @GetMapping("/me")
@@ -109,6 +115,14 @@ public class HospitalController {
             @PathVariable Long patientId) {
         AssignedDonorResponse response = bloodRequestService.getAssignedDonorForPatient(patientId);
         return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
+    }
+
+    @PostMapping("/blood-bank-requests")
+    public ResponseEntity<ApiResponse<HospitalRequestResponse>> sendBloodBankRequest(
+            @Valid @RequestBody CreateHospitalRequestDto request) {
+        HospitalRequestResponse response = bloodBankHospitalRequestService.createRequestFromHospital(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Blood bank request sent successfully", response));
     }
 
     @PostMapping("/blood-requests")

@@ -10,11 +10,15 @@ import java.time.LocalDateTime;
 public class BloodBankResponse {
 
     private Long id;
-    private String name;
+    private String bloodBankName;
     private String email;
     private String phoneNumber;
     private String address;
+    private String city;
+    private String state;
+    private String pinCode;
+    private String licenseNumber;
+    private String profileImage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String pincode;
 }

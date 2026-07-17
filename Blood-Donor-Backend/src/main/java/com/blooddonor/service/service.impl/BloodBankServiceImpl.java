@@ -3,7 +3,7 @@ package com.blooddonor.service.impl;
 import com.blooddonor.dto.request.BloodBankUpdateRequest;
 import com.blooddonor.dto.response.BloodBankResponse;
 import com.blooddonor.entity.BloodBank;
-import com.blooddonor.exception.ResourceNotFoundException;
+import com.blooddonor.exception.BloodBankNotFoundException;
 import com.blooddonor.mapper.BloodBankMapper;
 import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.service.BloodBankService;
@@ -58,6 +58,6 @@ public class BloodBankServiceImpl implements BloodBankService {
     private BloodBank findCurrentBloodBank() {
         Long bloodBankId = securityUtil.getCurrentUserId();
         return bloodBankRepository.findById(bloodBankId)
-                .orElseThrow(() -> new ResourceNotFoundException("Blood bank not found"));
+                .orElseThrow(() -> new BloodBankNotFoundException("Blood bank not found"));
     }
 }

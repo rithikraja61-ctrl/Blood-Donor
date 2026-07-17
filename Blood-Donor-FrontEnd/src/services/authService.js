@@ -46,11 +46,14 @@ function buildSignupPayload(role, formData) {
     phoneNumber: formData.bloodBankPhone.trim(),
     password: formData.password,
     address: formData.bloodBankAddress.trim(),
+    city: formData.bloodBankCity.trim(),
+    state: formData.bloodBankState.trim(),
+    licenseNumber: formData.bloodBankLicenseNumber.trim(),
     pincode,
   };
 
-  if (formData.licenseNumber.trim()) {
-    payload.licenseNumber = formData.licenseNumber.trim();
+  if (formData.profileImageUrl?.trim()) {
+    payload.profileImageUrl = formData.profileImageUrl.trim();
   }
 
   return payload;
@@ -75,7 +78,9 @@ export function mapBackendFieldErrors(fieldErrors, role) {
     phoneNumber: 'bloodBankPhone',
     address: 'bloodBankAddress',
     pincode: 'pincode',
-    licenseNumber: 'licenseNumber',
+    city: 'bloodBankCity',
+    state: 'bloodBankState',
+    licenseNumber: 'bloodBankLicenseNumber',
   };
 
   Object.entries(fieldErrors).forEach(([key, msg]) => {

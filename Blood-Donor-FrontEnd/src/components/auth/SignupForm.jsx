@@ -45,6 +45,9 @@ const INITIAL_FORM = {
   bloodBankEmail: '',
   bloodBankPhone: '',
   bloodBankAddress: '',
+  bloodBankCity: '',
+  bloodBankState: '',
+  bloodBankLicenseNumber: '',
   licenseNumber: '',
   password: '',
   confirmPassword: '',
@@ -127,6 +130,9 @@ function SignupForm() {
       if (!d.bloodBankPhone.trim()) e.bloodBankPhone = 'Blood bank phone number is required';
       else if (!PHONE_REGEX.test(d.bloodBankPhone)) e.bloodBankPhone = 'Phone must contain 10–15 digits only';
       if (!d.bloodBankAddress.trim()) e.bloodBankAddress = 'Blood bank address is required';
+      if (!d.bloodBankCity.trim()) e.bloodBankCity = 'City is required';
+      if (!d.bloodBankState.trim()) e.bloodBankState = 'State is required';
+      if (!d.bloodBankLicenseNumber.trim()) e.bloodBankLicenseNumber = 'License number is required';
     }
 
     validatePincode(d, e);
@@ -341,12 +347,30 @@ function SignupForm() {
               placeholder="Enter blood bank address"
             />
             <CommonInput
-              id="licenseNumber"
-              label="License Number (optional)"
-              name="licenseNumber"
-              value={formData.licenseNumber}
+              id="bloodBankCity"
+              label="City"
+              name="bloodBankCity"
+              value={formData.bloodBankCity}
               onChange={handleChange}
-              error={errors.licenseNumber}
+              error={errors.bloodBankCity}
+              placeholder="Enter city"
+            />
+            <CommonInput
+              id="bloodBankState"
+              label="State"
+              name="bloodBankState"
+              value={formData.bloodBankState}
+              onChange={handleChange}
+              error={errors.bloodBankState}
+              placeholder="Enter state"
+            />
+            <CommonInput
+              id="bloodBankLicenseNumber"
+              label="License Number"
+              name="bloodBankLicenseNumber"
+              value={formData.bloodBankLicenseNumber}
+              onChange={handleChange}
+              error={errors.bloodBankLicenseNumber}
               placeholder="Enter license number"
             />
           </>

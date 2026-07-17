@@ -9,6 +9,7 @@ import {
 import { loginUser, registerUser } from '../services/authService';
 import { getUserProfile } from '../services/userService';
 import { getHospitalProfile } from '../services/hospitalService';
+import { getBloodBankProfile } from '../services/bloodBankService';
 import { ApiError } from '../services/apiClient';
 
 const AuthContext = createContext(null);
@@ -28,10 +29,10 @@ function mapProfileToUser(baseUser, profile) {
 
   return {
     ...baseUser,
-    name: profile.name ?? baseUser.name,
+    name: profile.bloodBankName ?? profile.name ?? baseUser.name,
     phoneNumber: profile.phoneNumber ?? baseUser.phoneNumber,
     address: profile.address ?? baseUser.address,
-    pincode: profile.pincode ?? baseUser.pincode,
+    pincode: profile.pinCode ?? profile.pincode ?? baseUser.pincode,
     city: profile.city ?? baseUser.city,
     state: profile.state ?? baseUser.state,
     licenseNumber: profile.licenseNumber ?? baseUser.licenseNumber,
@@ -88,6 +89,15 @@ export function AuthProvider({ children }) {
       }
     }
 
+    if (authData.role === ROLES.BLOOD_BANK) {
+      try {
+        const profile = await getBloodBankProfile();
+        return persistAuth(authData, profile);
+      } catch {
+        return persistAuth(authData);
+      }
+    }
+
     return persistAuth(authData);
   }, [persistAuth]);
 
@@ -130,6 +140,9 @@ export function AuthProvider({ children }) {
           persistAuth({ token: storedToken, ...storedUser }, profile);
         } else if (storedUser?.role === ROLES.HOSPITAL) {
           const profile = await getHospitalProfile();
+          persistAuth({ token: storedToken, ...storedUser }, profile);
+        } else if (storedUser?.role === ROLES.BLOOD_BANK) {
+          const profile = await getBloodBankProfile();
           persistAuth({ token: storedToken, ...storedUser }, profile);
         } else {
           setToken(storedToken);

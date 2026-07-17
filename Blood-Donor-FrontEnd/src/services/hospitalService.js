@@ -48,6 +48,14 @@ export async function deletePatient(patientId) {
   await apiRequest(`/hospitals/patients/${patientId}`, { method: 'DELETE' });
 }
 
+export async function sendBloodBankRequest(payload) {
+  const res = await apiRequest('/hospitals/blood-bank-requests', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
 export async function sendHospitalBloodRequest(payload) {
   const res = await apiRequest('/hospitals/blood-requests', {
     method: 'POST',
