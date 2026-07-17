@@ -1,5 +1,6 @@
 package com.blooddonor.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -12,4 +13,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Hospital extends BaseAccount {
+
+    @Column(nullable = false)
+    private String city = "";
+
+    @Column(nullable = false)
+    private String state = "";
+
+    @Column(nullable = false)
+    private String licenseNumber = "";
+
+    @Column(length = 512)
+    private String profileImageUrl;
 }

@@ -14,7 +14,11 @@ public class HospitalResponse {
     private String email;
     private String phoneNumber;
     private String address;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String city;
+    private String state;
     private String pincode;
+    private String licenseNumber;
+    private String profileImageUrl;
+    private LocalDateTime registrationDate;
+    private LocalDateTime updatedAt;
 }

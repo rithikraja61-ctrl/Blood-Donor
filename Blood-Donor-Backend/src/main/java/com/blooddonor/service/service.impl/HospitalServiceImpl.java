@@ -1,30 +1,44 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.HospitalUpdateRequest;
+import com.blooddonor.dto.response.HospitalDashboardResponse;
 import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.HospitalMapper;
+import com.blooddonor.repository.BloodRequestRepository;
 import com.blooddonor.repository.HospitalRepository;
+import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.service.HospitalService;
 import com.blooddonor.util.SecurityUtil;
+import com.blooddonor.validation.BloodRequestStatus;
+import com.blooddonor.validation.TreatmentStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 public class HospitalServiceImpl implements HospitalService {
 
     private final HospitalRepository hospitalRepository;
+    private final PatientRepository patientRepository;
+    private final BloodRequestRepository bloodRequestRepository;
     private final HospitalMapper hospitalMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
 
     public HospitalServiceImpl(
             HospitalRepository hospitalRepository,
+            PatientRepository patientRepository,
+            BloodRequestRepository bloodRequestRepository,
             HospitalMapper hospitalMapper,
             SecurityUtil securityUtil,
             PasswordEncoder passwordEncoder) {
         this.hospitalRepository = hospitalRepository;
+        this.patientRepository = patientRepository;
+        this.bloodRequestRepository = bloodRequestRepository;
         this.hospitalMapper = hospitalMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
@@ -32,8 +46,7 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     public HospitalResponse getProfile() {
-        Hospital hospital = findCurrentHospital();
-        return hospitalMapper.toResponse(hospital);
+        return hospitalMapper.toResponse(findCurrentHospital());
     }
 
     @Override
@@ -45,14 +58,34 @@ public class HospitalServiceImpl implements HospitalService {
             hospital.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        Hospital updatedHospital = hospitalRepository.save(hospital);
-        return hospitalMapper.toResponse(updatedHospital);
+        return hospitalMapper.toResponse(hospitalRepository.save(hospital));
     }
 
     @Override
     public void deleteAccount() {
-        Hospital hospital = findCurrentHospital();
-        hospitalRepository.delete(hospital);
+        hospitalRepository.delete(findCurrentHospital());
+    }
+
+    @Override
+    public HospitalDashboardResponse getDashboard() {
+        Long hospitalId = findCurrentHospital().getId();
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        return HospitalDashboardResponse.builder()
+                .totalBloodRequests(bloodRequestRepository.countByHospitalId(hospitalId))
+                .totalPatientsWaitingForBlood(patientRepository.countPatientsWaitingForBlood(
+                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
+                .totalPatientsSuccessfullyReceivedBlood(patientRepository.countByHospitalIdAndTreatmentStatus(
+                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
+                .totalPatientsStillWaitingForDonors(patientRepository.countPatientsStillWaitingForDonors(
+                        hospitalId, TreatmentStatus.TREATMENT_COMPLETED))
+                .totalBloodDonationsCompletedToday(bloodRequestRepository.countCompletedTodayByHospital(
+                        hospitalId, BloodRequestStatus.COMPLETED, startOfDay, endOfDay))
+                .totalActiveDonorsWhoAcceptedRequests(bloodRequestRepository.countDistinctDonorsWithAcceptedRequests(
+                        hospitalId, BloodRequestStatus.ACCEPTED))
+                .build();
     }
 
     private Hospital findCurrentHospital() {
