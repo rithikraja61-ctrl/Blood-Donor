@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class DonorSearchResponse {
+    private Long id;
     private String name;
     private String bloodGroup;          // "B+"
     private String city;

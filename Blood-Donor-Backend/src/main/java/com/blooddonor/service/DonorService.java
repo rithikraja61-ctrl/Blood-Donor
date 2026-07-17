@@ -2,11 +2,14 @@ package com.blooddonor.service;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
 import com.blooddonor.dto.response.CursorDonorSearchResponse;
+import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
 
 public interface DonorService {
 
     DonorResponse getProfile();
+
+    DonorDashboardResponse getDashboard();
 
     DonorResponse updateProfile(DonorUpdateRequest request);
 

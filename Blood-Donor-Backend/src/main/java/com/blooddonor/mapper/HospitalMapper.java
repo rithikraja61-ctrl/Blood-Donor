@@ -20,6 +20,10 @@ public class HospitalMapper {
         hospital.setPassword(request.getPassword());
         hospital.setAddress(request.getAddress());
         hospital.setPincode(request.getPincode());
+        hospital.setCity(request.getCity());
+        hospital.setState(request.getState());
+        hospital.setLicenseNumber(request.getLicenseNumber());
+        hospital.setProfileImageUrl(request.getProfileImageUrl());
         hospital.setRole(Role.HOSPITAL);
         return hospital;
     }
@@ -31,8 +35,12 @@ public class HospitalMapper {
                 .email(hospital.getEmail())
                 .phoneNumber(hospital.getPhoneNumber())
                 .address(hospital.getAddress())
+                .city(hospital.getCity())
+                .state(hospital.getState())
                 .pincode(hospital.getPincode())
-                .createdAt(hospital.getCreatedAt())
+                .licenseNumber(hospital.getLicenseNumber())
+                .profileImageUrl(hospital.getProfileImageUrl())
+                .registrationDate(hospital.getCreatedAt())
                 .updatedAt(hospital.getUpdatedAt())
                 .build();
     }
@@ -42,5 +50,9 @@ public class HospitalMapper {
         Optional.ofNullable(request.getPhoneNumber()).ifPresent(hospital::setPhoneNumber);
         Optional.ofNullable(request.getAddress()).ifPresent(hospital::setAddress);
         Optional.ofNullable(request.getPincode()).ifPresent(hospital::setPincode);
+        Optional.ofNullable(request.getCity()).ifPresent(hospital::setCity);
+        Optional.ofNullable(request.getState()).ifPresent(hospital::setState);
+        Optional.ofNullable(request.getLicenseNumber()).ifPresent(hospital::setLicenseNumber);
+        Optional.ofNullable(request.getProfileImageUrl()).ifPresent(hospital::setProfileImageUrl);
     }
 }

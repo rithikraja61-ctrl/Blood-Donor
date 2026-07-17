@@ -1,4 +1,5 @@
-import { API_BASE_URL, AUTH_TOKEN_KEY } from '../utils/constants';
+import { API_BASE_URL } from '../utils/constants';
+import { getAuthToken } from '../utils/authStorage';
 
 export class ApiError extends Error {
   constructor(message, fieldErrors = null, status = null) {
@@ -29,7 +30,7 @@ async function parseResponse(response) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  const token = getAuthToken();
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
 

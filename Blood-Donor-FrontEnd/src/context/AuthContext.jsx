@@ -1,7 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { AUTH_TOKEN_KEY, AUTH_USER_KEY, ROLES, TYPE_TO_BLOOD_GROUP } from '../utils/constants';
+import { ROLES, TYPE_TO_BLOOD_GROUP } from '../utils/constants';
+import {
+  clearAuthSession,
+  getAuthToken,
+  getAuthUser,
+  setAuthSession,
+} from '../utils/authStorage';
 import { loginUser, registerUser } from '../services/authService';
 import { getUserProfile } from '../services/userService';
+import { getHospitalProfile } from '../services/hospitalService';
 import { ApiError } from '../services/apiClient';
 
 const AuthContext = createContext(null);
@@ -25,6 +32,10 @@ function mapProfileToUser(baseUser, profile) {
     phoneNumber: profile.phoneNumber ?? baseUser.phoneNumber,
     address: profile.address ?? baseUser.address,
     pincode: profile.pincode ?? baseUser.pincode,
+    city: profile.city ?? baseUser.city,
+    state: profile.state ?? baseUser.state,
+    licenseNumber: profile.licenseNumber ?? baseUser.licenseNumber,
+    available: profile.available ?? baseUser.available,
     bloodGroup: profile.bloodType
       ? TYPE_TO_BLOOD_GROUP[profile.bloodType] || profile.bloodType
       : baseUser.bloodGroup,
@@ -32,20 +43,12 @@ function mapProfileToUser(baseUser, profile) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(AUTH_USER_KEY));
-    } catch {
-      return null;
-    }
-  });
-  const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const [user, setUser] = useState(() => getAuthUser());
+  const [token, setToken] = useState(() => getAuthToken());
   const [isLoading, setIsLoading] = useState(true);
 
   const clearAuth = useCallback(() => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_USER_KEY);
-    sessionStorage.clear();
+    clearAuthSession();
     setToken(null);
     setUser(null);
   }, []);
@@ -60,24 +63,39 @@ export function AuthProvider({ children }) {
       profile,
     );
 
-    localStorage.setItem(AUTH_TOKEN_KEY, authData.token);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
+    setAuthSession(authData.token, authUser);
     setToken(authData.token);
     setUser(authUser);
     return authUser;
   }, []);
 
   const hydrateUserProfile = useCallback(async (authData) => {
-    if (authData.role !== ROLES.USER) {
-      return persistAuth(authData);
+    if (authData.role === ROLES.USER) {
+      try {
+        const profile = await getUserProfile();
+        return persistAuth(authData, profile);
+      } catch {
+        return persistAuth(authData);
+      }
     }
 
-    try {
-      const profile = await getUserProfile();
-      return persistAuth(authData, profile);
-    } catch {
-      return persistAuth(authData);
+    if (authData.role === ROLES.HOSPITAL) {
+      try {
+        const profile = await getHospitalProfile();
+        return persistAuth(authData, profile);
+      } catch {
+        return persistAuth(authData);
+      }
     }
+
+    return persistAuth(authData);
+  }, [persistAuth]);
+
+  const syncProfile = useCallback((profile) => {
+    const storedToken = getAuthToken();
+    const storedUser = getAuthUser();
+    if (!storedUser || !storedToken) return null;
+    return persistAuth({ token: storedToken, ...storedUser }, profile);
   }, [persistAuth]);
 
   const login = async (role, email, password) => {
@@ -87,7 +105,7 @@ export function AuthProvider({ children }) {
 
   const register = async (role, formData) => {
     const data = await registerUser(role, formData);
-    return persistAuth(data);
+    return hydrateUserProfile(data);
   };
 
   const logout = useCallback(() => {
@@ -96,7 +114,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      const storedToken = getAuthToken();
 
       if (!storedToken || !isTokenValid(storedToken)) {
         clearAuth();
@@ -105,11 +123,17 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const storedUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY));
+        const storedUser = getAuthUser();
 
         if (storedUser?.role === ROLES.USER) {
           const profile = await getUserProfile();
           persistAuth({ token: storedToken, ...storedUser }, profile);
+        } else if (storedUser?.role === ROLES.HOSPITAL) {
+          const profile = await getHospitalProfile();
+          persistAuth({ token: storedToken, ...storedUser }, profile);
+        } else {
+          setToken(storedToken);
+          setUser(storedUser);
         }
       } catch (err) {
         if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
@@ -132,8 +156,9 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      syncProfile,
     }),
-    [user, token, isLoading, logout],
+    [user, token, isLoading, logout, syncProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

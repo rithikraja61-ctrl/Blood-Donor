@@ -1,0 +1,57 @@
+.hospital-send-request__patient {
+  margin-bottom: 1.5rem;
+}
+
+.hospital-send-request__patient select {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.5rem;
+  min-width: 280px;
+}
+
+.hospital-send-request__patient-meta {
+  margin-top: 0.5rem;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.hospital-send-request__donors {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hospital-send-request__donor-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.hospital-send-request__donor-card--selected {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
+}
+
+.hospital-send-request__confirm {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: #fafafa;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 420px;
+}
+
+.hospital-send-request__success {
+  color: #0a7;
+  font-weight: 500;
+}

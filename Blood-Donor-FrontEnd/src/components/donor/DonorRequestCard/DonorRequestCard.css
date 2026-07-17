@@ -1,0 +1,82 @@
+.donor-request-card {
+  background: var(--color-white);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.donor-request-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.donor-request-card__status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--landing-bg-soft);
+}
+
+.donor-request-card__status--pending { color: #b45309; background: #fef3c7; }
+.donor-request-card__status--accepted { color: #047857; background: #d1fae5; }
+.donor-request-card__status--rejected { color: #b91c1c; background: #fee2e2; }
+.donor-request-card__status--expired { color: #6b7280; background: #f3f4f6; }
+
+.donor-request-card__emergency {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-blood-red);
+}
+
+.donor-request-card__title {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+
+.donor-request-card__meta {
+  font-size: 0.88rem;
+  color: var(--landing-text-muted);
+  margin: 0.2rem 0;
+}
+
+.donor-request-card__reason {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  color: var(--landing-text);
+}
+
+.donor-request-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.donor-request-card__accept,
+.donor-request-card__reject {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.donor-request-card__accept {
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  color: var(--color-white);
+}
+
+.donor-request-card__reject {
+  background: var(--landing-bg-soft);
+  color: var(--landing-text);
+  border: 1px solid var(--landing-border);
+}
+
+.donor-request-card__accept:disabled,
+.donor-request-card__reject:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

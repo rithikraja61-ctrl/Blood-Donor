@@ -1,49 +1,35 @@
 package com.blooddonor.controller;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
-import com.blooddonor.dto.response.CursorDonorSearchResponse;
+import com.blooddonor.dto.response.BloodRequestResponse;
+import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
 import com.blooddonor.response.ApiResponse;
+import com.blooddonor.service.BloodRequestService;
 import com.blooddonor.service.DonorService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/donors")
-@Validated
 public class DonorController {
 
     private final DonorService donorService;
+    private final BloodRequestService bloodRequestService;
 
-    public DonorController(DonorService donorService) {
+    public DonorController(DonorService donorService, BloodRequestService bloodRequestService) {
         this.donorService = donorService;
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<CursorDonorSearchResponse>> searchDonors(
-            @RequestParam @NotBlank(message = "Blood group is required") String bloodGroup,
-            @RequestParam("pinCode")
-            @NotBlank(message = "PIN code is required")
-            @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
-            String pinCode,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit,
-            @RequestParam(required = false) String nextCursor,
-            @RequestParam(required = false) String previousCursor) {
-        CursorDonorSearchResponse response = donorService.searchDonors(
-                bloodGroup, pinCode, limit, nextCursor, previousCursor);
-        return ResponseEntity.ok(ApiResponse.success("Donors fetched successfully", response));
+        this.bloodRequestService = bloodRequestService;
     }
 
     @GetMapping("/me")
@@ -52,8 +38,11 @@ public class DonorController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-
-    
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<DonorDashboardResponse>> getDashboard() {
+        DonorDashboardResponse response = donorService.getDashboard();
+        return ResponseEntity.ok(ApiResponse.success("Dashboard fetched successfully", response));
+    }
 
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<DonorResponse>> updateProfile(
@@ -67,4 +56,25 @@ public class DonorController {
         donorService.deleteAccount();
         return ResponseEntity.ok(ApiResponse.success("Account deleted successfully"));
     }
+
+    @GetMapping("/blood-requests")
+    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> listIncomingBloodRequests() {
+        List<BloodRequestResponse> response = bloodRequestService.listIncomingForDonor();
+        return ResponseEntity.ok(ApiResponse.success("Incoming blood requests fetched successfully", response));
+    }
+
+    @PostMapping("/blood-requests/{requestId}/accept")
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> acceptBloodRequest(
+            @PathVariable Long requestId) {
+        BloodRequestResponse response = bloodRequestService.acceptRequest(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request accepted successfully", response));
+    }
+
+    @PostMapping("/blood-requests/{requestId}/reject")
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> rejectBloodRequest(
+            @PathVariable Long requestId) {
+        BloodRequestResponse response = bloodRequestService.rejectRequest(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request rejected successfully", response));
+    }
 }
+

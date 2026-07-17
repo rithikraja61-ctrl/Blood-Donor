@@ -18,9 +18,13 @@ function UserHomePage() {
           <span className="user-home__card-icon" aria-hidden="true">👤</span>
           <span className="user-home__card-label">View Profile</span>
         </Link>
-        <Link to={ROUTES.FIND_DONOR} className="user-home__card user-home__card--primary">
+        <Link to={ROUTES.REQUEST_BLOOD} className="user-home__card user-home__card--primary">
           <span className="user-home__card-icon" aria-hidden="true">🩸</span>
-          <span className="user-home__card-label">Find Donor</span>
+          <span className="user-home__card-label">Request Blood</span>
+        </Link>
+        <Link to={ROUTES.FIND_DONOR} className="user-home__card">
+          <span className="user-home__card-icon" aria-hidden="true">🔍</span>
+          <span className="user-home__card-label">Browse Donors</span>
         </Link>
       </div>
     </div>

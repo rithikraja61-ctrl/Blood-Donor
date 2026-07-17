@@ -6,8 +6,10 @@ import './UserSidebar.css';
 
 const NAV_ITEMS = [
   { label: 'Home', to: ROUTES.USER_HOME },
-  { label: 'Profile', to: ROUTES.PROFILE },
+  { label: 'Request Blood', to: ROUTES.REQUEST_BLOOD },
+  { label: 'My Requests', to: ROUTES.MY_REQUESTS },
   { label: 'Find Donor', to: ROUTES.FIND_DONOR },
+  { label: 'Profile', to: ROUTES.PROFILE },
 ];
 
 function UserSidebar() {

@@ -2,53 +2,75 @@ package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
 import com.blooddonor.dto.response.CursorDonorSearchResponse;
+import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
 import com.blooddonor.dto.response.DonorSearchResponse;
 import com.blooddonor.entity.Donor;
 import com.blooddonor.exception.BadRequestException;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.DonorMapper;
+import com.blooddonor.repository.BloodRequestRepository;
 import com.blooddonor.repository.DonorRepository;
 import com.blooddonor.service.DonorService;
-import com.blooddonor.util.BloodCompatibilityUtil;
 import com.blooddonor.util.DonorSearchCursorUtil;
+import com.blooddonor.util.EligibleDonorFinder;
 import com.blooddonor.util.PincodeProximityUtil;
 import com.blooddonor.util.SecurityUtil;
-import com.blooddonor.validation.BloodType;
+import com.blooddonor.validation.BloodRequestStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class DonorServiceImpl implements DonorService {
 
-    private static final int MIN_DONORS = 5;
-    private static final int DONATION_COOLDOWN_DAYS = 90;
-
     private final DonorRepository donorRepository;
+    private final BloodRequestRepository bloodRequestRepository;
     private final DonorMapper donorMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
+    private final EligibleDonorFinder eligibleDonorFinder;
 
     public DonorServiceImpl(
             DonorRepository donorRepository,
+            BloodRequestRepository bloodRequestRepository,
             DonorMapper donorMapper,
             SecurityUtil securityUtil,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            EligibleDonorFinder eligibleDonorFinder) {
         this.donorRepository = donorRepository;
+        this.bloodRequestRepository = bloodRequestRepository;
         this.donorMapper = donorMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
+        this.eligibleDonorFinder = eligibleDonorFinder;
     }
 
     @Override
     public DonorResponse getProfile() {
         Donor donor = findCurrentDonor();
         return donorMapper.toResponse(donor);
+    }
+
+    @Override
+    public DonorDashboardResponse getDashboard() {
+        Donor donor = findCurrentDonor();
+        Long donorId = donor.getId();
+
+        long totalDonationsMade = bloodRequestRepository.countByDonorIdAndStatusIn(
+                donorId,
+                List.of(BloodRequestStatus.COMPLETED, BloodRequestStatus.ACCEPTED));
+        long pendingRequestsCount = bloodRequestRepository.countByDonorIdAndStatus(
+                donorId, BloodRequestStatus.PENDING);
+
+        return DonorDashboardResponse.builder()
+                .donorName(donor.getName())
+                .bloodGroupDisplay(donor.getBloodType().getDisplayName())
+                .lastDonationDate(donor.getLastDonationDate())
+                .totalDonationsMade(totalDonationsMade)
+                .pendingRequestsCount(pendingRequestsCount)
+                .build();
     }
 
     @Override
@@ -82,32 +104,7 @@ public class DonorServiceImpl implements DonorService {
     }
 
     private List<Donor> findSortedEligibleDonors(String bloodGroup, String pinCode) {
-        BloodType requiredType = BloodType.fromDisplay(bloodGroup);
-        List<BloodType> compatibleTypes = BloodCompatibilityUtil.getCompatibleTypesInPriorityOrder(requiredType);
-        LocalDate cutoffDate = LocalDate.now().minusDays(DONATION_COOLDOWN_DAYS);
-
-        List<Donor> allEligible = donorRepository.findEligibleDonors(compatibleTypes, cutoffDate);
-
-        List<Donor> samePinDonors = allEligible.stream()
-                .filter(d -> d.getPincode().equals(pinCode))
-                .toList();
-
-        List<Donor> resultPool = new ArrayList<>(samePinDonors);
-
-        if (resultPool.size() < MIN_DONORS) {
-            allEligible.stream()
-                    .filter(d -> !d.getPincode().equals(pinCode))
-                    .forEach(resultPool::add);
-        }
-
-        return resultPool.stream()
-                .sorted(Comparator
-                        .comparingInt((Donor d) -> PincodeProximityUtil.getDistanceRank(
-                                PincodeProximityUtil.getDistancePriority(pinCode, d.getPincode())))
-                        .thenComparingInt(d -> BloodCompatibilityUtil.getBloodPriority(requiredType, d.getBloodType()))
-                        .thenComparing(Donor::getLastDonationDate, Comparator.nullsFirst(Comparator.naturalOrder()))
-                        .thenComparing(Donor::getId))
-                .toList();
+        return eligibleDonorFinder.findSortedEligibleDonors(bloodGroup, pinCode);
     }
 
     private CursorDonorSearchResponse paginateWithCursor(
@@ -176,6 +173,7 @@ public class DonorServiceImpl implements DonorService {
 
     private DonorSearchResponse toSearchResponse(Donor donor, String searchPin) {
         return DonorSearchResponse.builder()
+                .id(donor.getId())
                 .name(donor.getName())
                 .bloodGroup(donor.getBloodType().getDisplayName())
                 .city(donor.getCity())
