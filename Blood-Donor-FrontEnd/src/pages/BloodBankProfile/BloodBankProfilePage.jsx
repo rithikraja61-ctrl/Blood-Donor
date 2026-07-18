@@ -10,24 +10,27 @@ import LocationSelector from '../../components/map/LocationSelector';
 import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import { useAuth } from '../../context/AuthContext';
 import '../DonorProfile/DonorProfilePage.css';
+import './BloodBankProfilePage.css';
 
-const EMPTY = {
-  name: '',
-  email: '',
-  phoneNumber: '',
-  address: '',
-  city: '',
-  state: '',
-  pincode: '',
-  licenseNumber: '',
-  profileImageUrl: '',
-  latitude: null,
-  longitude: null,
-};
+function mapProfileToForm(data, fallbackName = '') {
+  return {
+    name: data?.bloodBankName || data?.name || fallbackName,
+    email: data?.email || '',
+    phoneNumber: data?.phoneNumber || '',
+    address: data?.address || '',
+    city: data?.city || '',
+    state: data?.state || '',
+    pincode: data?.pinCode || data?.pincode || '',
+    licenseNumber: data?.licenseNumber || '',
+    profileImageUrl: data?.profileImage || data?.profileImageUrl || '',
+    latitude: data?.latitude ?? null,
+    longitude: data?.longitude ?? null,
+  };
+}
 
 function BloodBankProfilePage() {
-  const { syncProfile } = useAuth();
-  const [form, setForm] = useState(EMPTY);
+  const { user, syncProfile } = useAuth();
+  const [form, setForm] = useState(() => mapProfileToForm(null, user?.name || ''));
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
@@ -36,24 +39,15 @@ function BloodBankProfilePage() {
   useEffect(() => {
     getBloodBankProfile()
       .then((data) => {
-        setForm({
-          name: data.bloodBankName || data.name || '',
-          email: data.email || '',
-          phoneNumber: data.phoneNumber || '',
-          address: data.address || '',
-          city: data.city || '',
-          state: data.state || '',
-          pincode: data.pinCode || data.pincode || '',
-          licenseNumber: data.licenseNumber || '',
-          profileImageUrl: data.profileImage || data.profileImageUrl || '',
-          latitude: data.latitude ?? null,
-          longitude: data.longitude ?? null,
-        });
+        setForm(mapProfileToForm(data, user?.name || ''));
       })
       .catch((err) => {
+        if (user?.name) {
+          setForm((prev) => ({ ...prev, name: prev.name || user.name }));
+        }
         setError(err instanceof ApiError ? err.message : 'Failed to load profile.');
       });
-  }, []);
+  }, [user?.name]);
 
   const handleLocationChange = (loc) => {
     setForm((prev) => applyLocationToFormFields(prev, loc, 'Blood Bank'));
@@ -95,6 +89,7 @@ function BloodBankProfilePage() {
         name: updated.bloodBankName || updated.name,
         pincode: updated.pinCode || updated.pincode,
       });
+      setForm(mapProfileToForm(updated, form.name));
       setSuccess('Profile updated successfully.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to update profile.');
@@ -103,12 +98,19 @@ function BloodBankProfilePage() {
     }
   };
 
+  const displayName = form.name || user?.name || 'Blood bank';
+
   return (
     <div className="donor-profile-page">
       <PageHeader
         title="Blood bank profile"
-        subtitle="View and update your blood bank details."
+        subtitle="Your registered blood bank details."
       />
+
+      <section className="donor-profile-page__card blood-bank-profile__name-card" aria-label="Registered blood bank name">
+        <p className="blood-bank-profile__name-label">Registered blood bank</p>
+        <h2 className="blood-bank-profile__name-value">{displayName}</h2>
+      </section>
 
       {error && <p className="donor-profile-page__error">{error}</p>}
       {success && <p style={{ color: 'var(--color-success, #0a7)' }}>{success}</p>}

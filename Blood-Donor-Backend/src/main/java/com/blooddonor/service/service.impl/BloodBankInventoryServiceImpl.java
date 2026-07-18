@@ -14,6 +14,7 @@ import com.blooddonor.mapper.BloodBankModuleMapper;
 import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.repository.BloodInventoryRepository;
 import com.blooddonor.repository.BloodStockHistoryRepository;
+import com.blooddonor.service.BloodBankAutomationEmailService;
 import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.util.BloodInventoryDefaults;
 import com.blooddonor.util.SecurityUtil;
@@ -34,18 +35,21 @@ public class BloodBankInventoryServiceImpl implements BloodBankInventoryService 
     private final BloodStockHistoryRepository bloodStockHistoryRepository;
     private final BloodBankModuleMapper bloodBankModuleMapper;
     private final SecurityUtil securityUtil;
+    private final BloodBankAutomationEmailService bloodBankAutomationEmailService;
 
     public BloodBankInventoryServiceImpl(
             BloodBankRepository bloodBankRepository,
             BloodInventoryRepository bloodInventoryRepository,
             BloodStockHistoryRepository bloodStockHistoryRepository,
             BloodBankModuleMapper bloodBankModuleMapper,
-            SecurityUtil securityUtil) {
+            SecurityUtil securityUtil,
+            BloodBankAutomationEmailService bloodBankAutomationEmailService) {
         this.bloodBankRepository = bloodBankRepository;
         this.bloodInventoryRepository = bloodInventoryRepository;
         this.bloodStockHistoryRepository = bloodStockHistoryRepository;
         this.bloodBankModuleMapper = bloodBankModuleMapper;
         this.securityUtil = securityUtil;
+        this.bloodBankAutomationEmailService = bloodBankAutomationEmailService;
     }
 
     @Override
@@ -95,6 +99,7 @@ public class BloodBankInventoryServiceImpl implements BloodBankInventoryService 
         BloodInventory saved = bloodInventoryRepository.save(inventory);
         recordHistory(bloodBank, bloodType, StockHistoryChangeType.INCREASE, request.getUnits(),
                 saved.getAvailableUnits(), null, "Stock increase");
+        bloodBankAutomationEmailService.checkAndNotifyBloodBank(bloodBank.getId());
         return bloodBankModuleMapper.toInventoryResponse(saved);
     }
 
@@ -114,6 +119,7 @@ public class BloodBankInventoryServiceImpl implements BloodBankInventoryService 
         BloodInventory saved = bloodInventoryRepository.save(inventory);
         recordHistory(bloodBank, bloodType, StockHistoryChangeType.DECREASE, request.getUnits(),
                 saved.getAvailableUnits(), null, "Stock decrease");
+        bloodBankAutomationEmailService.checkAndNotifyBloodBank(bloodBank.getId());
         return bloodBankModuleMapper.toInventoryResponse(saved);
     }
 
@@ -148,6 +154,7 @@ public class BloodBankInventoryServiceImpl implements BloodBankInventoryService 
         BloodInventory saved = bloodInventoryRepository.save(inventory);
         recordHistory(bloodBank, bloodType, StockHistoryChangeType.ISSUE, units,
                 saved.getAvailableUnits(), requestId, "Blood issued for hospital request");
+        bloodBankAutomationEmailService.checkAndNotifyBloodBank(bloodBank.getId());
         return saved;
     }
 

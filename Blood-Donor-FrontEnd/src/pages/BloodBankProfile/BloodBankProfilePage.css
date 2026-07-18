@@ -1,0 +1,19 @@
+.blood-bank-profile__name-card {
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  border: none;
+  color: var(--color-white);
+}
+
+.blood-bank-profile__name-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.blood-bank-profile__name-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}

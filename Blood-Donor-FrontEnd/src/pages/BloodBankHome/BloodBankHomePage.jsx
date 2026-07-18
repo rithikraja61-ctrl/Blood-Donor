@@ -33,12 +33,12 @@ function BloodBankHomePage() {
 
   const stats = dashboard
     ? [
-        { label: 'Approved (hospital)', value: dashboard.totalBloodRequestsApproved },
-        { label: 'Rejected (hospital)', value: dashboard.totalBloodRequestsRejected },
-        { label: 'Units issued', value: dashboard.totalBloodUnitsIssued, highlight: true },
-        { label: 'Expired units', value: dashboard.totalExpiredBloodUnits },
-        { label: "Today's hospital requests", value: dashboard.todaysRequests },
-        { label: 'Monthly issued', value: dashboard.monthlyBloodIssued },
+        { label: 'Approved (hospital)', value: dashboard.totalBloodRequestsApproved, tone: 'success' },
+        { label: 'Rejected (hospital)', value: dashboard.totalBloodRequestsRejected, tone: 'danger' },
+        { label: 'Units issued', value: dashboard.totalBloodUnitsIssued, tone: 'primary' },
+        { label: 'Expired units', value: dashboard.totalExpiredBloodUnits, tone: 'warning' },
+        { label: "Today's hospital requests", value: dashboard.todaysRequests, tone: 'info' },
+        { label: 'Monthly issued', value: dashboard.monthlyBloodIssued, tone: 'purple' },
       ]
     : [];
 
@@ -56,7 +56,10 @@ function BloodBankHomePage() {
       ) : dashboard && (
         <>
           <section className="blood-bank-home__requests" aria-label="Request overview">
-            <Link to={ROUTES.BLOOD_BANK_RECEIVED_REQUESTS} className="blood-bank-home__request-card">
+            <Link
+              to={ROUTES.BLOOD_BANK_RECEIVED_REQUESTS}
+              className="blood-bank-home__request-card blood-bank-home__request-card--received"
+            >
               <span className="blood-bank-home__request-icon" aria-hidden="true">📥</span>
               <div>
                 <h2>Received requests</h2>
@@ -70,7 +73,10 @@ function BloodBankHomePage() {
               </div>
             </Link>
 
-            <Link to={ROUTES.BLOOD_BANK_SEND_REQUEST} className="blood-bank-home__request-card">
+            <Link
+              to={ROUTES.BLOOD_BANK_SEND_REQUEST}
+              className="blood-bank-home__request-card blood-bank-home__request-card--send"
+            >
               <span className="blood-bank-home__request-icon" aria-hidden="true">📤</span>
               <div>
                 <h2>Send requests</h2>
@@ -90,15 +96,17 @@ function BloodBankHomePage() {
             <BloodTypePieChart data={dashboard.availabilityByBloodType || []} />
           </section>
 
-          <section className="donor-dashboard" aria-label="Other statistics">
-            <div className="donor-dashboard__stats">
-              {stats.map((stat) => (
+          <section className="blood-bank-home__stats-section" aria-label="Other statistics">
+            <h2 className="blood-bank-home__section-title">Overview statistics</h2>
+            <div className="blood-bank-home__stats">
+              {stats.map((stat, index) => (
                 <article
                   key={stat.label}
-                  className={`donor-dashboard__stat ${stat.highlight ? 'donor-dashboard__stat--highlight' : ''}`}
+                  className={`blood-bank-home__stat blood-bank-home__stat--${stat.tone}`}
+                  style={{ animationDelay: `${index * 0.07}s` }}
                 >
-                  <span className="donor-dashboard__stat-label">{stat.label}</span>
-                  <strong className="donor-dashboard__stat-value">{stat.value}</strong>
+                  <span className="blood-bank-home__stat-label">{stat.label}</span>
+                  <strong className="blood-bank-home__stat-value">{stat.value}</strong>
                 </article>
               ))}
             </div>
@@ -106,24 +114,20 @@ function BloodBankHomePage() {
         </>
       )}
 
-      <div className="donor-home__cards">
-        <Link to={ROUTES.BLOOD_BANK_INVENTORY} className="donor-home__card donor-home__card--primary">
+      <div className="donor-home__cards blood-bank-home__quick-links">
+        <Link to={ROUTES.BLOOD_BANK_INVENTORY} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--inventory">
           <span className="donor-home__card-icon" aria-hidden="true">🩸</span>
           <span className="donor-home__card-label">Manage inventory</span>
         </Link>
-        <Link to={ROUTES.BLOOD_BANK_RECEIVED_REQUESTS} className="donor-home__card">
+        <Link to={ROUTES.BLOOD_BANK_RECEIVED_REQUESTS} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--received">
           <span className="donor-home__card-icon" aria-hidden="true">📥</span>
           <span className="donor-home__card-label">Received requests</span>
         </Link>
-        <Link to={ROUTES.BLOOD_BANK_SEND_REQUEST} className="donor-home__card">
+        <Link to={ROUTES.BLOOD_BANK_SEND_REQUEST} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--send">
           <span className="donor-home__card-icon" aria-hidden="true">📤</span>
           <span className="donor-home__card-label">Send request</span>
         </Link>
-        <Link to={ROUTES.BLOOD_BANK_HOSPITAL_REQUESTS} className="donor-home__card">
-          <span className="donor-home__card-icon" aria-hidden="true">🏥</span>
-          <span className="donor-home__card-label">Stock requests</span>
-        </Link>
-        <Link to={ROUTES.BLOOD_BANK_ISSUE_HISTORY} className="donor-home__card">
+        <Link to={ROUTES.BLOOD_BANK_ISSUE_HISTORY} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--history">
           <span className="donor-home__card-icon" aria-hidden="true">📋</span>
           <span className="donor-home__card-label">Issue history</span>
         </Link>

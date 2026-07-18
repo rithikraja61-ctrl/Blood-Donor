@@ -19,6 +19,7 @@ public class PatientResponse {
     private Gender gender;
     private BloodType bloodType;
     private String bloodGroup;
+    private int unitsRequired;
     private String reasonForBlood;
     private LocalDate requiredBeforeDate;
     private boolean donorAssigned;

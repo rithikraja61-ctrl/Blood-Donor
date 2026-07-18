@@ -1,11 +1,13 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.HospitalUpdateRequest;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.dto.response.HospitalDashboardResponse;
 import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.HospitalMapper;
+import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.repository.BloodRequestRepository;
 import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.PatientRepository;
@@ -17,12 +19,15 @@ import com.blooddonor.validation.PatientRequestStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class HospitalServiceImpl implements HospitalService {
 
     private final HospitalRepository hospitalRepository;
     private final PatientRepository patientRepository;
     private final BloodRequestRepository bloodRequestRepository;
+    private final BloodBankRepository bloodBankRepository;
     private final HospitalMapper hospitalMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
@@ -32,6 +37,7 @@ public class HospitalServiceImpl implements HospitalService {
             HospitalRepository hospitalRepository,
             PatientRepository patientRepository,
             BloodRequestRepository bloodRequestRepository,
+            BloodBankRepository bloodBankRepository,
             HospitalMapper hospitalMapper,
             SecurityUtil securityUtil,
             PasswordEncoder passwordEncoder,
@@ -39,6 +45,7 @@ public class HospitalServiceImpl implements HospitalService {
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
         this.bloodRequestRepository = bloodRequestRepository;
+        this.bloodBankRepository = bloodBankRepository;
         this.hospitalMapper = hospitalMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
@@ -87,6 +94,18 @@ public class HospitalServiceImpl implements HospitalService {
                 .totalActiveDonorsWhoAcceptedRequests(bloodRequestRepository.countDistinctDonorsWithAcceptedRequests(
                         hospitalId, BloodRequestStatus.ACCEPTED))
                 .build();
+    }
+
+    @Override
+    public List<BloodBankSummaryResponse> listAvailableBloodBanks() {
+        return bloodBankRepository.findAll().stream()
+                .map(bloodBank -> BloodBankSummaryResponse.builder()
+                        .id(bloodBank.getId())
+                        .bloodBankName(bloodBank.getName())
+                        .city(bloodBank.getCity())
+                        .pinCode(bloodBank.getPincode())
+                        .build())
+                .toList();
     }
 
     private Hospital findCurrentHospital() {

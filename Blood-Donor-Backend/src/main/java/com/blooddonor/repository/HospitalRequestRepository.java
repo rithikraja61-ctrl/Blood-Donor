@@ -41,4 +41,9 @@ public interface HospitalRequestRepository extends JpaRepository<HospitalRequest
             @Param("endOfDay") LocalDateTime endOfDay);
 
     List<HospitalRequest> findByBloodBankIdAndStatus(Long bloodBankId, HospitalRequestStatus status);
+
+    long countByBloodBankIdAndBloodGroupAndStatus(
+            Long bloodBankId,
+            com.blooddonor.validation.BloodType bloodGroup,
+            HospitalRequestStatus status);
 }

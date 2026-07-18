@@ -6,6 +6,7 @@ import com.blooddonor.dto.request.PatientCreateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.HospitalDashboardResponse;
 import com.blooddonor.dto.response.HospitalRequestResponse;
@@ -115,6 +116,12 @@ public class HospitalController {
             @PathVariable Long patientId) {
         AssignedDonorResponse response = bloodRequestService.getAssignedDonorForPatient(patientId);
         return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
+    }
+
+    @GetMapping("/bloodbanks")
+    public ResponseEntity<ApiResponse<List<BloodBankSummaryResponse>>> listBloodBanks() {
+        List<BloodBankSummaryResponse> response = hospitalService.listAvailableBloodBanks();
+        return ResponseEntity.ok(ApiResponse.success("Blood banks fetched successfully", response));
     }
 
     @PostMapping("/blood-bank-requests")

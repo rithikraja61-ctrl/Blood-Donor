@@ -28,3 +28,22 @@ google:
   maps:
     api-key: ${GOOGLE_MAPS_API_KEY:}
     default-search-radius-km: 25
+
+spring.mail:
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
+blood-donor:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from-name: ${MAIL_FROM_NAME:Blood Donors}
+    low-stock-threshold: 5
+    expiry-warning-days: 7
