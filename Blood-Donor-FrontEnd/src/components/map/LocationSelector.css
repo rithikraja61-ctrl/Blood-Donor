@@ -210,3 +210,23 @@
   color: var(--color-error, #c00);
   border-color: var(--color-error, #c00);
 }
+
+.osm-map-picker {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.request-location-map__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #666);
+}
+
+.request-location-map__fallback {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #666);
+}

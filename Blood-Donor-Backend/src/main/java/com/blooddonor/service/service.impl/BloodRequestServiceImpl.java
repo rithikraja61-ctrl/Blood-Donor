@@ -4,7 +4,9 @@ import com.blooddonor.dto.request.BloodBankSendBloodRequestDto;
 import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
+import com.blooddonor.dto.response.AcceptedDonorLocationResponse;
 import com.blooddonor.dto.response.AssignedDonorResponse;
+import com.blooddonor.dto.response.BloodRequestGroupSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.entity.BaseAccount;
 import com.blooddonor.entity.BloodBank;
@@ -267,30 +269,53 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
         String bloodGroup = user.getBloodType().getDisplayName();
         GeoCoordinates origin = resolveRequestOrigin(request.getLatitude(), request.getLongitude(), user);
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
-                bloodGroup,
-                origin,
-                user.getPincode(),
-                googleMapsProperties.getDefaultSearchRadiusKm());
+        double radiusKm = request.getRadiusKm() != null
+                ? request.getRadiusKm()
+                : googleMapsProperties.getDefaultSearchRadiusKm();
 
-        if (nearbyDonors.isEmpty()) {
+        List<Donor> targetDonors = resolveTargetDonorsForUser(
+                request, bloodGroup, origin, user.getPincode(), radiusKm);
+
+        if (targetDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
         }
 
         String requestGroupId = UUID.randomUUID().toString();
         List<BloodRequestResponse> responses = new ArrayList<>();
 
-        for (Donor donor : nearbyDonors) {
+        for (Donor donor : targetDonors) {
             BloodRequest bloodRequest = buildUserBloodRequest(
                     requestGroupId, user, donor, reason, request);
             responses.add(bloodRequestMapper.toResponse(bloodRequestRepository.save(bloodRequest)));
         }
 
-        if (responses.isEmpty()) {
-            throw new BadRequestException("No eligible donors found nearby");
+        return responses;
+    }
+
+    private List<Donor> resolveTargetDonorsForUser(
+            UserSendBloodRequestDto request,
+            String bloodGroup,
+            GeoCoordinates origin,
+            String pinCodeFallback,
+            double radiusKm) {
+        if (request.getDonorIds() != null && !request.getDonorIds().isEmpty()) {
+            List<Long> uniqueIds = request.getDonorIds().stream().distinct().toList();
+            List<Donor> selectedDonors = new ArrayList<>();
+            for (Long donorId : uniqueIds) {
+                if (!eligibleDonorFinder.isEligibleSelectedDonor(
+                        bloodGroup, origin, pinCodeFallback, donorId, radiusKm)) {
+                    throw new BadRequestException(
+                            "Selected donor is not eligible within " + (int) radiusKm + " km radius");
+                }
+                Donor donor = donorRepository.findById(donorId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Donor not found"));
+                selectedDonors.add(donor);
+            }
+            return selectedDonors;
         }
 
-        return responses;
+        return eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup, origin, pinCodeFallback, radiusKm);
     }
 
     @Override
@@ -372,6 +397,68 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         BloodRequest request = bloodRequestRepository.findByIdAndUserId(requestId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Blood request not found"));
         return bloodRequestMapper.toResponse(request);
+    }
+
+    @Override
+    public BloodRequestGroupSummaryResponse getRequestGroupSummaryForUser(String requestGroupId) {
+        User user = findCurrentUser();
+        List<BloodRequest> requests = bloodRequestRepository.findByRequestGroupId(requestGroupId);
+        if (requests.isEmpty()) {
+            throw new ResourceNotFoundException("Blood request group not found");
+        }
+
+        BloodRequest first = requests.get(0);
+        if (first.getUser() == null || !first.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundException("Blood request group not found");
+        }
+
+        int acceptedCount = 0;
+        int pendingCount = 0;
+        int rejectedCount = 0;
+        int expiredCount = 0;
+        List<AcceptedDonorLocationResponse> acceptedDonors = new ArrayList<>();
+
+        for (BloodRequest request : requests) {
+            switch (request.getStatus()) {
+                case ACCEPTED, COMPLETED -> {
+                    acceptedCount++;
+                    Donor donor = request.getDonor();
+                    acceptedDonors.add(AcceptedDonorLocationResponse.builder()
+                            .donorId(donor.getId())
+                            .donorName(donor.getName())
+                            .bloodGroup(donor.getBloodType().getDisplayName())
+                            .latitude(donor.getLatitude())
+                            .longitude(donor.getLongitude())
+                            .bloodRequestId(request.getId())
+                            .acceptedAt(request.getRespondedAt())
+                            .build());
+                }
+                case PENDING -> pendingCount++;
+                case REJECTED -> rejectedCount++;
+                case EXPIRED -> expiredCount++;
+                default -> { }
+            }
+        }
+
+        BloodRequestStatus groupStatus = acceptedCount > 0
+                ? BloodRequestStatus.ACCEPTED
+                : pendingCount > 0
+                        ? BloodRequestStatus.PENDING
+                        : BloodRequestStatus.EXPIRED;
+
+        return BloodRequestGroupSummaryResponse.builder()
+                .requestGroupId(requestGroupId)
+                .totalSent(requests.size())
+                .acceptedCount(acceptedCount)
+                .pendingCount(pendingCount)
+                .rejectedCount(rejectedCount)
+                .expiredCount(expiredCount)
+                .groupStatus(groupStatus)
+                .requestLatitude(first.getRequestLatitude())
+                .requestLongitude(first.getRequestLongitude())
+                .createdAt(first.getCreatedAt())
+                .acceptedDonors(acceptedDonors)
+                .build();
     }
 
     @Override

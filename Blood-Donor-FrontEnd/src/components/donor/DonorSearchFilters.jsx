@@ -8,15 +8,24 @@ const AVAILABILITY_OPTIONS = [
   { value: 'Unavailable', label: 'Unavailable' },
 ];
 
+const RADIUS_OPTIONS = [
+  { value: '5', label: '5 km' },
+  { value: '10', label: '10 km' },
+  { value: '25', label: '25 km' },
+  { value: '50', label: '50 km' },
+];
+
 function DonorSearchFilters({
   search,
   bloodGroup,
   pincode,
   availability,
+  radiusKm,
   onSearchChange,
   onBloodGroupChange,
   onPincodeChange,
   onAvailabilityChange,
+  onRadiusChange,
   onReset,
   onSearch,
   loading = false,
@@ -47,6 +56,12 @@ function DonorSearchFilters({
         value={availability}
         onChange={onAvailabilityChange}
         options={AVAILABILITY_OPTIONS}
+      />
+      <FilterSelect
+        label="Search radius"
+        value={String(radiusKm)}
+        onChange={onRadiusChange}
+        options={RADIUS_OPTIONS}
       />
       <button type="button" className="donor-filters__reset" onClick={onReset}>
         Reset

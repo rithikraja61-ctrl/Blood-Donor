@@ -4,25 +4,18 @@ import {
   useRef,
   useState,
 } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import {
   EMPTY_LOCATION,
   formatLocationSummary,
   isPincodeQuery,
   normalizeLocation,
-  parsePlaceResult,
 } from '../../utils/locationUtils';
 import { resolveReverseGeocode, resolveSearchGeocode } from '../../services/clientGeocodeService';
+import { suggestGeocodeLocation } from '../../services/geocodeService';
 import { ApiError } from '../../services/apiClient';
+import OsmMapPicker from './OsmMapPicker';
 import './LocationSelector.css';
 
-const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };
-const MAP_CONTAINER_STYLE = {
-  width: '100%',
-  height: '300px',
-  borderRadius: '8px',
-};
-const GOOGLE_MAP_LIBRARIES = ['places'];
 const MIN_SEARCH_LENGTH = 2;
 const SEARCH_DEBOUNCE_MS = 350;
 
@@ -33,10 +26,6 @@ function LocationSelector({
   title = 'Select location',
   hint = 'Search by area or PIN code, use GPS, or tap the map to pin your location.',
 }) {
-  const mapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  const mapRef = useRef(null);
-  const autocompleteServiceRef = useRef(null);
-  const placesServiceRef = useRef(null);
   const searchDebounceRef = useRef(null);
   const searchWrapRef = useRef(null);
 
@@ -45,26 +34,8 @@ function LocationSelector({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
-  const [mapAuthError, setMapAuthError] = useState('');
   const [geoError, setGeoError] = useState('');
   const [activeLocation, setActiveLocation] = useState(location);
-
-  useEffect(() => {
-    window.gm_authFailure = () => {
-      setMapAuthError(
-        'Google Maps could not load. Enable Maps JavaScript API and Places API on your browser key.',
-      );
-    };
-    return () => {
-      window.gm_authFailure = undefined;
-    };
-  }, []);
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'blood-donor-google-map',
-    googleMapsApiKey: mapsApiKey || '',
-    libraries: GOOGLE_MAP_LIBRARIES,
-  });
 
   const hasPosition = activeLocation?.latitude != null && activeLocation?.longitude != null;
 
@@ -94,13 +65,6 @@ function LocationSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const panMapTo = useCallback((lat, lng) => {
-    if (mapRef.current) {
-      mapRef.current.panTo({ lat, lng });
-      mapRef.current.setZoom(15);
-    }
-  }, []);
-
   const applyLocation = useCallback((nextLocation) => {
     if (!nextLocation) return;
 
@@ -110,25 +74,10 @@ function LocationSelector({
     if (normalized.formattedAddress) {
       setSearchText(normalized.formattedAddress);
     }
-    if (normalized.latitude != null && normalized.longitude != null) {
-      panMapTo(normalized.latitude, normalized.longitude);
-    }
     onLocationChange?.(normalized);
     setShowSuggestions(false);
-  }, [onLocationChange, panMapTo]);
-
-  const initPlacesServices = useCallback((map) => {
-    mapRef.current = map;
-
-    if (!window.google?.maps?.places) return;
-
-    if (!autocompleteServiceRef.current) {
-      autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-    }
-    if (!placesServiceRef.current) {
-      placesServiceRef.current = new window.google.maps.places.PlacesService(map);
-    }
-  }, []);
+    setPredictions([]);
+  }, [onLocationChange]);
 
   const resolveLocation = useCallback(async (resolver) => {
     setResolving(true);
@@ -154,32 +103,26 @@ function LocationSelector({
     });
   }, [resolveLocation]);
 
-  const fetchPredictions = useCallback((input) => {
+  const fetchPredictions = useCallback(async (input) => {
     if (isPincodeQuery(input)) {
       setPredictions([]);
       geocodePincode(input.trim());
       return;
     }
 
-    if (!autocompleteServiceRef.current || input.length < MIN_SEARCH_LENGTH) {
+    if (input.length < MIN_SEARCH_LENGTH) {
       setPredictions([]);
       return;
     }
 
-    autocompleteServiceRef.current.getPlacePredictions(
-      {
-        input,
-        componentRestrictions: { country: 'in' },
-      },
-      (results, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
-          setPredictions(results);
-          setShowSuggestions(true);
-        } else {
-          setPredictions([]);
-        }
-      },
-    );
+    try {
+      const results = await suggestGeocodeLocation(input);
+      setPredictions(results);
+      setShowSuggestions(results.length > 0);
+    } catch {
+      setPredictions([]);
+      setShowSuggestions(false);
+    }
   }, [geocodePincode]);
 
   const handleSearchChange = (event) => {
@@ -211,31 +154,7 @@ function LocationSelector({
   };
 
   const handleSelectPrediction = (prediction) => {
-    if (!placesServiceRef.current) return;
-
-    setResolving(true);
-    setShowSuggestions(false);
-    setSearchText(prediction.description);
-    setGeoError('');
-
-    placesServiceRef.current.getDetails(
-      {
-        placeId: prediction.place_id,
-        fields: ['address_components', 'formatted_address', 'geometry', 'name'],
-      },
-      (place, status) => {
-        setResolving(false);
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-          const parsed = parsePlaceResult(place);
-          if (parsed) {
-            applyLocation(parsed);
-            return;
-          }
-        }
-        setGeoError('Could not load place details. Try another suggestion or tap the map.');
-        setPredictions([]);
-      },
-    );
+    applyLocation(prediction);
   };
 
   const reverseGeocode = useCallback((lat, lng) => {
@@ -244,9 +163,8 @@ function LocationSelector({
       latitude: lat,
       longitude: lng,
     }));
-    panMapTo(lat, lng);
     resolveLocation(() => resolveReverseGeocode(lat, lng));
-  }, [panMapTo, resolveLocation]);
+  }, [resolveLocation]);
 
   const handleUseGps = () => {
     if (!navigator.geolocation) {
@@ -268,34 +186,6 @@ function LocationSelector({
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
   };
-
-  const handleMapClick = (event) => {
-    reverseGeocode(event.latLng.lat(), event.latLng.lng());
-  };
-
-  const handleMarkerDragEnd = (event) => {
-    reverseGeocode(event.latLng.lat(), event.latLng.lng());
-  };
-
-  if (!mapsApiKey) {
-    return (
-      <div className="location-selector location-selector--error">
-        Google Maps API key is missing. Set VITE_GOOGLE_MAPS_API_KEY in your environment.
-      </div>
-    );
-  }
-
-  if (loadError || mapAuthError) {
-    return (
-      <div className="location-selector location-selector--error">
-        {mapAuthError || 'Failed to load Google Maps. Enable Maps JavaScript API and Places API on your browser key.'}
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
-    return <div className="location-selector location-selector--loading">Loading location picker…</div>;
-  }
 
   return (
     <div className="location-selector">
@@ -330,25 +220,33 @@ function LocationSelector({
         />
         {showSuggestions && predictions.length > 0 && (
           <ul className="location-selector__suggestions" role="listbox">
-            {predictions.map((prediction) => (
-              <li key={prediction.place_id} role="option">
-                <button
-                  type="button"
-                  className="location-selector__suggestion"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleSelectPrediction(prediction)}
-                >
-                  <span className="location-selector__suggestion-main">
-                    {prediction.structured_formatting?.main_text || prediction.description}
-                  </span>
-                  {prediction.structured_formatting?.secondary_text && (
-                    <span className="location-selector__suggestion-sub">
-                      {prediction.structured_formatting.secondary_text}
+            {predictions.map((prediction) => {
+              const key = `${prediction.latitude}-${prediction.longitude}-${prediction.formattedAddress}`;
+              const mainText = prediction.address || prediction.city || prediction.formattedAddress;
+              const secondaryText = [prediction.city, prediction.state, prediction.pincode]
+                .filter(Boolean)
+                .join(', ');
+
+              return (
+                <li key={key} role="option">
+                  <button
+                    type="button"
+                    className="location-selector__suggestion"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelectPrediction(prediction)}
+                  >
+                    <span className="location-selector__suggestion-main">
+                      {mainText}
                     </span>
-                  )}
-                </button>
-              </li>
-            ))}
+                    {secondaryText && (
+                      <span className="location-selector__suggestion-sub">
+                        {secondaryText}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
         {showSuggestions && searchText.trim().length >= MIN_SEARCH_LENGTH
@@ -359,28 +257,12 @@ function LocationSelector({
         )}
       </div>
 
-      <GoogleMap
-        mapContainerStyle={MAP_CONTAINER_STYLE}
-        center={hasPosition
-          ? { lat: activeLocation.latitude, lng: activeLocation.longitude }
-          : DEFAULT_CENTER}
-        zoom={hasPosition ? 15 : 5}
-        onLoad={initPlacesServices}
-        onClick={handleMapClick}
-        options={{
-          streetViewControl: false,
-          mapTypeControl: false,
-          fullscreenControl: false,
-        }}
-      >
-        {hasPosition && (
-          <Marker
-            position={{ lat: activeLocation.latitude, lng: activeLocation.longitude }}
-            draggable
-            onDragEnd={handleMarkerDragEnd}
-          />
-        )}
-      </GoogleMap>
+      <OsmMapPicker
+        latitude={activeLocation?.latitude}
+        longitude={activeLocation?.longitude}
+        onLocationChange={reverseGeocode}
+        height="300px"
+      />
 
       {(resolving || gpsLoading) && (
         <p className="location-selector__status">Fetching address details…</p>

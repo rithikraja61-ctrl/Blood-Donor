@@ -70,6 +70,161 @@
   font-size: 0.9rem;
 }
 
+.find-donor-page__gps {
+  margin-bottom: 1rem;
+}
+
+.find-donor-page__gps-coords {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--landing-text-muted);
+}
+
+.nearby-donors-map {
+  margin: 1rem 0 1.25rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--landing-border);
+}
+
+.nearby-map-marker {
+  background: transparent;
+  border: none;
+}
+
+.nearby-map-marker__emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.nearby-map-marker--donor .nearby-map-marker__emoji {
+  font-size: 1.5rem;
+}
+
+.nearby-map-marker--selected .nearby-map-marker__emoji {
+  outline: 3px solid #1565c0;
+  border-radius: 50%;
+}
+
+.nearby-map-marker--accepted .nearby-map-marker__emoji {
+  outline: 3px solid #2e7d32;
+  border-radius: 50%;
+}
+
+.find-donor-page__tracking {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: var(--radius-md);
+}
+
+.find-donor-page__tracking h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.find-donor-page__tracking-live {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #2e7d32;
+}
+
+.find-donor-page__request {
+  margin: 1.25rem 0;
+  padding: 1.25rem;
+  background: var(--color-white);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md);
+}
+
+.find-donor-page__request h3 {
+  margin: 0 0 1rem;
+}
+
+.find-donor-page__request-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+.find-donor-page__request-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.find-donor-page__request-grid input,
+.find-donor-page__request-grid select,
+.find-donor-page__request-grid textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.find-donor-page__request-reason {
+  grid-column: 1 / -1;
+}
+
+.find-donor-page__request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.find-donor-page__btn {
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-blood-red), var(--color-blood-red-light));
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.find-donor-page__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.find-donor-page__btn--secondary {
+  background: #1565c0;
+}
+
+.find-donor-page__btn--ghost {
+  background: transparent;
+  color: var(--color-blood-red);
+  border: 1px solid var(--color-blood-red);
+}
+
+.donor-card--selected {
+  border-color: #1565c0;
+  box-shadow: 0 0 0 1px #1565c0;
+}
+
+.donor-card--accepted {
+  border-color: #2e7d32;
+}
+
+.donor-card__checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .find-donor-page__request-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (min-width: 640px) { .donor-filters { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 992px) { .donor-filters { grid-template-columns: repeat(3, 1fr); } }
 

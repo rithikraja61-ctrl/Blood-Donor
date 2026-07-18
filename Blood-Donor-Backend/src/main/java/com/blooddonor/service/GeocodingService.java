@@ -4,6 +4,8 @@ import com.blooddonor.util.GeoCoordinates;
 import com.blooddonor.util.GeocodedAddress;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class GeocodingService {
 
@@ -40,5 +42,9 @@ public class GeocodingService {
         } catch (RuntimeException ex) {
             return googleGeocodingService.geocodeSearchQuery(query);
         }
+    }
+
+    public List<GeocodedAddress> suggestSearchQuery(String query) {
+        return openStreetMapGeocodingService.suggestSearchQuery(query, 5);
     }
 }

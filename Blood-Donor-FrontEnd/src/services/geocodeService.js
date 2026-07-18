@@ -26,3 +26,9 @@ export async function searchGeocodeLocation(query) {
   const res = await apiRequest(`/geocode/search?${params.toString()}`);
   return mapGeocodedLocation(res.data);
 }
+
+export async function suggestGeocodeLocation(query) {
+  const params = new URLSearchParams({ query });
+  const res = await apiRequest(`/geocode/suggest?${params.toString()}`);
+  return (res.data || []).map(mapGeocodedLocation);
+}

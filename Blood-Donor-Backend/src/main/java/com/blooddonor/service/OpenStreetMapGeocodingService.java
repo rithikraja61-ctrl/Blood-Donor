@@ -9,6 +9,8 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +60,54 @@ public class OpenStreetMapGeocodingService {
         }
 
         return parseSearchResponse(body, normalizedQuery);
+    }
+
+    public List<GeocodedAddress> suggestSearchQuery(String query, int limit) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+
+        String normalizedQuery = query.trim();
+        int safeLimit = Math.max(1, Math.min(limit, 8));
+        URI uri = UriComponentsBuilder
+                .fromUriString("https://nominatim.openstreetmap.org/search")
+                .queryParam("q", normalizedQuery)
+                .queryParam("countrycodes", "in")
+                .queryParam("format", "json")
+                .queryParam("addressdetails", 1)
+                .queryParam("limit", safeLimit)
+                .build(true)
+                .toUri();
+
+        String body = fetchBody(uri);
+        return parseSuggestResponse(body, normalizedQuery);
+    }
+
+    private List<GeocodedAddress> parseSuggestResponse(String body, String originalQuery) {
+        if (!ARRAY_START_PATTERN.matcher(body).find() || "[]".equals(body.trim())) {
+            return List.of();
+        }
+
+        String[] chunks = body.split("\\{\"place_id\"");
+        List<GeocodedAddress> suggestions = new ArrayList<>();
+        for (int index = 1; index < chunks.length; index++) {
+            String chunk = "{\"place_id\"" + chunks[index];
+            int end = chunk.lastIndexOf('}');
+            if (end <= 0) {
+                continue;
+            }
+            chunk = chunk.substring(0, end + 1);
+
+            String displayName = extractField(chunk, "display_name");
+            if (displayName.isBlank()) {
+                continue;
+            }
+
+            double lat = parseDoubleField(chunk, "lat");
+            double lng = parseDoubleField(chunk, "lon");
+            suggestions.add(buildGeocodedAddress(chunk, lat, lng, displayName, originalQuery));
+        }
+        return suggestions;
     }
 
     private String fetchBody(URI uri) {

@@ -8,10 +8,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 public class UserSendBloodRequestDto extends LocationRequest {
+
+    /** Optional — send only to these donor IDs (must be within radius). */
+    private List<Long> donorIds;
+
+    /** Search/send radius in km; defaults to configured value when omitted. */
+    private Double radiusKm;
 
     @NotBlank(message = "Contact person name is required")
     private String contactPersonName;

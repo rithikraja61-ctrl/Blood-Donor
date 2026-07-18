@@ -3,6 +3,7 @@ package com.blooddonor.controller;
 import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.request.UserUpdateRequest;
+import com.blooddonor.dto.response.BloodRequestGroupSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.UserResponse;
 import com.blooddonor.response.ApiResponse;
@@ -72,6 +73,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> listSentBloodRequests() {
         List<BloodRequestResponse> response = bloodRequestService.listSentRequestsForUser();
         return ResponseEntity.ok(ApiResponse.success("Blood requests fetched successfully", response));
+    }
+
+    @GetMapping("/blood-requests/groups/{requestGroupId}")
+    public ResponseEntity<ApiResponse<BloodRequestGroupSummaryResponse>> getBloodRequestGroupSummary(
+            @PathVariable String requestGroupId) {
+        BloodRequestGroupSummaryResponse response =
+                bloodRequestService.getRequestGroupSummaryForUser(requestGroupId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request group summary fetched successfully", response));
     }
 
     @GetMapping("/blood-requests/{requestId}")

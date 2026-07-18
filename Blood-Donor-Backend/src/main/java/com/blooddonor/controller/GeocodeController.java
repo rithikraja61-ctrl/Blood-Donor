@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/geocode")
 @Validated
@@ -38,6 +40,15 @@ public class GeocodeController {
             @RequestParam @NotBlank(message = "Search query is required") String query) {
         GeocodedAddress geocoded = geocodingService.geocodeSearchQuery(query.trim());
         return ResponseEntity.ok(ApiResponse.success("Location resolved", toResponse(geocoded)));
+    }
+
+    @GetMapping("/suggest")
+    public ResponseEntity<ApiResponse<List<GeocodedLocationResponse>>> suggestLocations(
+            @RequestParam @NotBlank(message = "Search query is required") String query) {
+        List<GeocodedLocationResponse> suggestions = geocodingService.suggestSearchQuery(query.trim()).stream()
+                .map(this::toResponse)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success("Suggestions loaded", suggestions));
     }
 
     private GeocodedLocationResponse toResponse(GeocodedAddress geocoded) {

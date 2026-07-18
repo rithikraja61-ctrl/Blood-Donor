@@ -5,6 +5,7 @@ import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
+import com.blooddonor.dto.response.BloodRequestGroupSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 
 import java.util.List;
@@ -36,6 +37,8 @@ public interface BloodRequestService {
     List<BloodRequestResponse> listSentRequestsForUser();
 
     BloodRequestResponse getRequestStatusForUser(Long requestId);
+
+    BloodRequestGroupSummaryResponse getRequestGroupSummaryForUser(String requestGroupId);
 
     List<BloodRequestResponse> listIncomingForDonor();
 

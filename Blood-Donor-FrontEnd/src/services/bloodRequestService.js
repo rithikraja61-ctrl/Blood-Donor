@@ -26,6 +26,11 @@ export async function getUserBloodRequestStatus(requestId) {
   return res.data;
 }
 
+export async function getUserBloodRequestGroupSummary(requestGroupId) {
+  const res = await apiRequest(`/users/blood-requests/groups/${requestGroupId}`);
+  return res.data;
+}
+
 export async function listDonorIncomingRequests() {
   const res = await apiRequest('/donors/blood-requests');
   return res.data;
