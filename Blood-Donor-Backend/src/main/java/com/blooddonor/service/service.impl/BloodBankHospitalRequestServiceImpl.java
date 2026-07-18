@@ -6,6 +6,7 @@ import com.blooddonor.entity.BloodBank;
 import com.blooddonor.entity.BloodIssue;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.entity.HospitalRequest;
+import com.blooddonor.entity.Patient;
 import com.blooddonor.exception.BadRequestException;
 import com.blooddonor.exception.BloodBankNotFoundException;
 import com.blooddonor.exception.RequestAlreadyProcessedException;
@@ -15,14 +16,13 @@ import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.repository.BloodIssueRepository;
 import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.HospitalRequestRepository;
+import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.service.BloodBankHospitalRequestService;
 import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.service.HospitalNotificationService;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodIssueStatus;
-import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.EmergencyLevel;
-import com.blooddonor.validation.Gender;
 import com.blooddonor.validation.HospitalRequestStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +35,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
 
     private final HospitalRequestRepository hospitalRequestRepository;
     private final HospitalRepository hospitalRepository;
+    private final PatientRepository patientRepository;
     private final BloodBankRepository bloodBankRepository;
     private final BloodIssueRepository bloodIssueRepository;
     private final BloodBankInventoryService bloodBankInventoryService;
@@ -45,6 +46,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
     public BloodBankHospitalRequestServiceImpl(
             HospitalRequestRepository hospitalRequestRepository,
             HospitalRepository hospitalRepository,
+            PatientRepository patientRepository,
             BloodBankRepository bloodBankRepository,
             BloodIssueRepository bloodIssueRepository,
             BloodBankInventoryService bloodBankInventoryService,
@@ -53,6 +55,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
             SecurityUtil securityUtil) {
         this.hospitalRequestRepository = hospitalRequestRepository;
         this.hospitalRepository = hospitalRepository;
+        this.patientRepository = patientRepository;
         this.bloodBankRepository = bloodBankRepository;
         this.bloodIssueRepository = bloodIssueRepository;
         this.bloodBankInventoryService = bloodBankInventoryService;
@@ -65,20 +68,26 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
     @Transactional
     public HospitalRequestResponse createRequestFromHospital(CreateHospitalRequestDto request) {
         Hospital hospital = findCurrentHospital();
+        Patient patient = patientRepository.findByIdAndHospitalId(request.getPatientId(), hospital.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
         BloodBank bloodBank = bloodBankRepository.findById(request.getBloodBankId())
                 .orElseThrow(() -> new BloodBankNotFoundException("Blood bank not found"));
+
+        String reason = request.getReason() != null && !request.getReason().isBlank()
+                ? request.getReason().trim()
+                : patient.getReasonForBlood();
 
         HospitalRequest hospitalRequest = new HospitalRequest();
         hospitalRequest.setHospital(hospital);
         hospitalRequest.setBloodBank(bloodBank);
         hospitalRequest.setHospitalName(hospital.getName());
-        hospitalRequest.setPatientName(request.getPatientName().trim());
-        hospitalRequest.setPatientAge(request.getPatientAge());
-        hospitalRequest.setGender(parseGender(request.getGender()));
-        hospitalRequest.setBloodGroup(BloodType.fromDisplay(request.getBloodGroup()));
-        hospitalRequest.setRequiredUnits(request.getRequiredUnits());
-        hospitalRequest.setEmergencyLevel(parseEmergencyLevel(request.getEmergencyLevel()));
-        hospitalRequest.setReason(request.getReason().trim());
+        hospitalRequest.setPatientName(patient.getPatientName());
+        hospitalRequest.setPatientAge(patient.getAge());
+        hospitalRequest.setGender(patient.getGender());
+        hospitalRequest.setBloodGroup(patient.getBloodType());
+        hospitalRequest.setRequiredUnits(patient.getUnitsRequired());
+        hospitalRequest.setEmergencyLevel(request.getEmergencyLevel());
+        hospitalRequest.setReason(reason);
         hospitalRequest.setRequiredBefore(request.getRequiredBefore());
         hospitalRequest.setHospitalContact(request.getHospitalContact());
         hospitalRequest.setStatus(HospitalRequestStatus.PENDING);
@@ -199,21 +208,5 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         Long hospitalId = securityUtil.getCurrentUserId();
         return hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found"));
-    }
-
-    private Gender parseGender(String gender) {
-        try {
-            return Gender.valueOf(gender.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Invalid gender: " + gender);
-        }
-    }
-
-    private EmergencyLevel parseEmergencyLevel(String emergencyLevel) {
-        try {
-            return EmergencyLevel.valueOf(emergencyLevel.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Invalid emergency level: " + emergencyLevel);
-        }
     }
 }
