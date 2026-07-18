@@ -6,6 +6,7 @@ import com.blooddonor.dto.request.PatientCreateRequest;
 import com.blooddonor.dto.request.PatientUpdateRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.HospitalDashboardResponse;
 import com.blooddonor.dto.response.HospitalRequestResponse;
@@ -13,6 +14,7 @@ import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.dto.response.PatientResponse;
 import com.blooddonor.response.ApiResponse;
 import com.blooddonor.service.BloodBankHospitalRequestService;
+import com.blooddonor.service.BloodBankService;
 import com.blooddonor.service.BloodRequestService;
 import com.blooddonor.service.HospitalService;
 import com.blooddonor.service.PatientService;
@@ -38,16 +40,19 @@ public class HospitalController {
     private final PatientService patientService;
     private final BloodRequestService bloodRequestService;
     private final BloodBankHospitalRequestService bloodBankHospitalRequestService;
+    private final BloodBankService bloodBankService;
 
     public HospitalController(
             HospitalService hospitalService,
             PatientService patientService,
             BloodRequestService bloodRequestService,
-            BloodBankHospitalRequestService bloodBankHospitalRequestService) {
+            BloodBankHospitalRequestService bloodBankHospitalRequestService,
+            BloodBankService bloodBankService) {
         this.hospitalService = hospitalService;
         this.patientService = patientService;
         this.bloodRequestService = bloodRequestService;
         this.bloodBankHospitalRequestService = bloodBankHospitalRequestService;
+        this.bloodBankService = bloodBankService;
     }
 
     @GetMapping("/me")
@@ -115,6 +120,12 @@ public class HospitalController {
             @PathVariable Long patientId) {
         AssignedDonorResponse response = bloodRequestService.getAssignedDonorForPatient(patientId);
         return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
+    }
+
+    @GetMapping("/blood-banks")
+    public ResponseEntity<ApiResponse<List<BloodBankSummaryResponse>>> listBloodBanks() {
+        List<BloodBankSummaryResponse> response = bloodBankService.listBloodBanksForHospital();
+        return ResponseEntity.ok(ApiResponse.success("Blood banks fetched successfully", response));
     }
 
     @PostMapping("/blood-bank-requests")

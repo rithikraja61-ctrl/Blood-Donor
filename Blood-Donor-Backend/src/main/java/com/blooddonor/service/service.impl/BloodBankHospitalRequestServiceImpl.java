@@ -84,6 +84,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         hospitalRequest.setStatus(HospitalRequestStatus.PENDING);
 
         HospitalRequest saved = hospitalRequestRepository.save(hospitalRequest);
+        hospitalNotificationService.notifyBloodBankNewHospitalRequest(bloodBank.getId(), saved.getId());
         return bloodBankModuleMapper.toHospitalRequestResponse(saved);
     }
 

@@ -1,53 +1,73 @@
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: blood-donor-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: blood_donor_db
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  app:
-    build:
-      context: ./Blood-Donor-Backend
-      dockerfile: Dockerfile
-    container_name: blood-donor-app
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      DB_USERNAME: root
-      DB_PASSWORD: root
-      JWT_SECRET: change-this-to-a-256-bit-secret-key-in-production-docker
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-  frontend:
-    build:
-      context: ./Blood-Donor-FrontEnd
-      dockerfile: Dockerfile
-    container_name: blood-donor-frontend
-    restart: unless-stopped
-    ports:
-      - "5174:5173"
-    volumes:
-      - ./Blood-Donor-FrontEnd:/app
-      - /app/node_modules
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
-      VITE_API_BASE_URL: http://localhost:8081/api
-    depends_on:
-      - app
-
-volumes:
-  mysql_data:
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: blood-donor-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: blood_donor_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: blood-donor-mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  app:
+    build:
+      context: ./Blood-Donor-Backend
+      dockerfile: Dockerfile
+    container_name: blood-donor-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      JWT_SECRET: change-this-to-a-256-bit-secret-key-in-production-docker
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      MAIL_HOST: ${MAIL_HOST:-mailhog}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Blood Donors}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./Blood-Donor-FrontEnd
+      dockerfile: Dockerfile
+    container_name: blood-donor-frontend
+    restart: unless-stopped
+    ports:
+      - "5174:5173"
+    volumes:
+      - ./Blood-Donor-FrontEnd:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      VITE_API_BASE_URL: http://localhost:8081/api
+    depends_on:
+      - app
+
+volumes:
+  mysql_data:

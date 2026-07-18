@@ -56,6 +56,11 @@ export async function sendBloodBankRequest(payload) {
   return res.data;
 }
 
+export async function listBloodBanksForHospital() {
+  const res = await apiRequest('/hospitals/blood-banks');
+  return res.data;
+}
+
 export async function sendHospitalBloodRequest(payload) {
   const res = await apiRequest('/hospitals/blood-requests', {
     method: 'POST',

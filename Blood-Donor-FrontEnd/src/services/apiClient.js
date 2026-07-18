@@ -40,7 +40,7 @@ export async function apiRequest(path, options = {}) {
   } catch (err) {
     if (err instanceof ApiError) throw err;
     throw new ApiError(
-      'Unable to connect to server. Make sure the backend is running on port 8080.',
+      `Unable to connect to server. Make sure the backend is running at ${API_BASE_URL}.`,
       null,
       0,
     );
