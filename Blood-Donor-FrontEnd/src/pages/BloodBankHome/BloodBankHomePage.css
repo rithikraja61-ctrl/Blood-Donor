@@ -1,0 +1,70 @@
+.blood-bank-home__section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--landing-text);
+}
+
+.blood-bank-home__requests {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.blood-bank-home__request-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  padding: 1.1rem 1.25rem;
+  background: var(--color-white);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.blood-bank-home__request-card:hover {
+  box-shadow: var(--landing-shadow);
+  border-color: var(--color-blood-red);
+}
+
+.blood-bank-home__request-card--donor {
+  cursor: default;
+}
+
+.blood-bank-home__request-card h2 {
+  font-size: 1rem;
+  margin: 0 0 0.2rem;
+}
+
+.blood-bank-home__request-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--landing-text-muted);
+}
+
+.blood-bank-home__request-icon {
+  font-size: 1.75rem;
+}
+
+.blood-bank-home__request-counts {
+  display: flex;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.blood-bank-home__request-counts strong {
+  display: block;
+  font-size: 1.35rem;
+  color: var(--color-blood-red);
+}
+
+.blood-bank-home__request-counts span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--landing-text-muted);
+  font-weight: 600;
+}

@@ -73,4 +73,6 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Long
     long countByDonorIdAndStatusIn(
             @Param("donorId") Long donorId,
             @Param("statuses") List<BloodRequestStatus> statuses);
+
+    long countByStatus(BloodRequestStatus status);
 }

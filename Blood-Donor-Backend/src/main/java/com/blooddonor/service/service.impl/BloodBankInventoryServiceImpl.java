@@ -15,6 +15,7 @@ import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.repository.BloodInventoryRepository;
 import com.blooddonor.repository.BloodStockHistoryRepository;
 import com.blooddonor.service.BloodBankInventoryService;
+import com.blooddonor.util.BloodInventoryDefaults;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.StockHistoryChangeType;
@@ -88,9 +89,7 @@ public class BloodBankInventoryServiceImpl implements BloodBankInventoryService 
         BloodType bloodType = resolveBloodType(request.getBloodGroup());
         BloodInventory inventory = getOrCreateInventory(bloodBank, bloodType);
 
-        if (request.getExpiryDate() != null) {
-            inventory.setExpiryDate(request.getExpiryDate());
-        }
+        inventory.setExpiryDate(BloodInventoryDefaults.defaultExpiryDate());
 
         inventory.setAvailableUnits(inventory.getAvailableUnits() + request.getUnits());
         BloodInventory saved = bloodInventoryRepository.save(inventory);

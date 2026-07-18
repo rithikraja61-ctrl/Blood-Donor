@@ -22,7 +22,7 @@ services:
     container_name: blood-donor-app
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_USERNAME: root
@@ -45,7 +45,7 @@ services:
       - /app/node_modules
     environment:
       CHOKIDAR_USEPOLLING: "true"
-      VITE_API_BASE_URL: http://localhost:8080/api
+      VITE_API_BASE_URL: http://localhost:8081/api
     depends_on:
       - app
 

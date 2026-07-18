@@ -16,6 +16,15 @@ export const ROLE_TO_SIGNUP_ENDPOINT = {
 
 export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+/** Default red-cell shelf life used when adding inventory (matches backend) */
+export const DEFAULT_BLOOD_SHELF_LIFE_DAYS = 42;
+
+export function defaultBloodExpiryDateString() {
+  const d = new Date();
+  d.setDate(d.getDate() + DEFAULT_BLOOD_SHELF_LIFE_DAYS);
+  return d.toISOString().slice(0, 10);
+}
+
 export const BLOOD_GROUP_FILTER_OPTIONS = ['All', ...BLOOD_GROUPS];
 
 export const BLOOD_GROUP_TO_TYPE = {
