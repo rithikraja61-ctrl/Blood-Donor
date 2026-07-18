@@ -5,6 +5,20 @@ spring:
     password: ${DB_PASSWORD:root}
   jpa:
     show-sql: false
+  mail:
+    host: ${MAIL_HOST:mailhog}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+            required: ${MAIL_STARTTLS:false}
+          ssl:
+            trust: ${MAIL_HOST:mailhog}
 
 jwt:
   secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-key-in-production-docker}
@@ -13,3 +27,7 @@ google:
   maps:
     api-key: ${GOOGLE_MAPS_API_KEY:}
     default-search-radius-km: 25
+
+blood-donor:
+  mail:
+    enabled: ${MAIL_ENABLED:true}

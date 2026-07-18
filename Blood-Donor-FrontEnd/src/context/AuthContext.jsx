@@ -71,31 +71,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const hydrateUserProfile = useCallback(async (authData) => {
-    if (authData.role === ROLES.USER) {
-      try {
-        const profile = await getUserProfile();
-        return persistAuth(authData, profile);
-      } catch {
-        return persistAuth(authData);
-      }
-    }
+    const baseUser = {
+      id: authData.id,
+      email: authData.email,
+      role: authData.role,
+    };
 
-    if (authData.role === ROLES.HOSPITAL) {
-      try {
-        const profile = await getHospitalProfile();
-        return persistAuth(authData, profile);
-      } catch {
-        return persistAuth(authData);
-      }
-    }
+    setAuthSession(authData.token, baseUser);
+    setToken(authData.token);
+    setUser(baseUser);
 
-    if (authData.role === ROLES.BLOOD_BANK) {
-      try {
-        const profile = await getBloodBankProfile();
-        return persistAuth(authData, profile);
-      } catch {
-        return persistAuth(authData);
+    try {
+      if (authData.role === ROLES.USER) {
+        return persistAuth(authData, await getUserProfile());
       }
+      if (authData.role === ROLES.HOSPITAL) {
+        return persistAuth(authData, await getHospitalProfile());
+      }
+      if (authData.role === ROLES.BLOOD_BANK) {
+        return persistAuth(authData, await getBloodBankProfile());
+      }
+    } catch {
+      // Profile fetch failed; keep auth with base user fields.
     }
 
     return persistAuth(authData);
@@ -115,6 +112,17 @@ export function AuthProvider({ children }) {
 
   const register = async (role, formData) => {
     const data = await registerUser(role, formData);
+    const seedProfile = role === 'Blood Bank'
+      ? {
+          bloodBankName: formData.bloodBankName?.trim(),
+          name: formData.bloodBankName?.trim(),
+        }
+      : null;
+
+    if (seedProfile?.name) {
+      persistAuth(data, seedProfile);
+    }
+
     return hydrateUserProfile(data);
   };
 

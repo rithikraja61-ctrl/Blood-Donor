@@ -2,6 +2,7 @@ package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.BloodBankUpdateRequest;
 import com.blooddonor.dto.response.BloodBankResponse;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.entity.BloodBank;
 import com.blooddonor.exception.BloodBankNotFoundException;
 import com.blooddonor.mapper.BloodBankMapper;
@@ -11,6 +12,9 @@ import com.blooddonor.service.AccountLocationService;
 import com.blooddonor.util.SecurityUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class BloodBankServiceImpl implements BloodBankService {
@@ -66,6 +70,19 @@ public class BloodBankServiceImpl implements BloodBankService {
     public void deleteAccount() {
         BloodBank bloodBank = findCurrentBloodBank();
         bloodBankRepository.delete(bloodBank);
+    }
+
+    @Override
+    public List<BloodBankSummaryResponse> listBloodBanksForHospital() {
+        return bloodBankRepository.findAll().stream()
+                .sorted(Comparator.comparing(BloodBank::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(bloodBank -> BloodBankSummaryResponse.builder()
+                        .id(bloodBank.getId())
+                        .bloodBankName(bloodBank.getName())
+                        .city(bloodBank.getCity())
+                        .pinCode(bloodBank.getPincode())
+                        .build())
+                .toList();
     }
 
     private BloodBank findCurrentBloodBank() {
