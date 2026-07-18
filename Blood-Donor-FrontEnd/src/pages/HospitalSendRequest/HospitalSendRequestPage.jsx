@@ -7,6 +7,7 @@ import {
   listPatients,
   sendHospitalBloodRequest,
 } from '../../services/hospitalService';
+import GpsCaptureButton from '../../components/map/GpsCaptureButton';
 import { ApiError } from '../../services/apiClient';
 import '../BloodRequest/BloodRequestPage.css';
 import './HospitalSendRequestPage.css';
@@ -30,6 +31,7 @@ function HospitalSendRequestPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(null);
+  const [liveLocation, setLiveLocation] = useState(null);
 
   const selectedPatient = useMemo(
     () => patients.find((p) => String(p.id) === String(patientId)),
@@ -105,6 +107,10 @@ function HospitalSendRequestPage() {
       setError('Set a valid 6-digit pincode in your hospital profile before sending a request.');
       return;
     }
+    if (!liveLocation?.latitude || !liveLocation?.longitude) {
+      setError('Please capture your hospital live GPS location before sending.');
+      return;
+    }
 
     setSubmitLoading(true);
     try {
@@ -115,6 +121,8 @@ function HospitalSendRequestPage() {
         emergencyLevel: form.emergencyLevel,
         requiredBeforeDateTime: form.requiredBeforeDateTime,
         reasonForBloodRequirement: form.reasonForBloodRequirement.trim() || undefined,
+        latitude: liveLocation.latitude,
+        longitude: liveLocation.longitude,
       });
       setSuccess({
         count: responses.length,
@@ -131,7 +139,14 @@ function HospitalSendRequestPage() {
     <div className="blood-request-page hospital-send-request">
       <PageHeader
         title="Send blood request"
-        subtitle="Select a patient — your request is broadcast automatically to eligible donors nearby."
+        subtitle="Capture live GPS location and broadcast to eligible donors nearby."
+      />
+
+      <GpsCaptureButton
+        required
+        onCapture={setLiveLocation}
+        label="Update hospital live location (GPS)"
+        capturedLabel="Hospital live location ready"
       />
 
       <section className="hospital-send-request__patient">

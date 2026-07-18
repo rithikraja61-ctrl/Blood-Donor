@@ -5,7 +5,8 @@ import {
   TYPE_TO_BLOOD_GROUP,
 } from '../../utils/constants';
 import { ApiError } from '../../services/apiClient';
-import LocationPickerMap from '../map/LocationPickerMap';
+import LocationSelector from '../map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import './ProfileForm.css';
 
 const PHONE_REGEX = /^[0-9]{10,15}$/;
@@ -63,6 +64,11 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
     setSuccess('');
   };
 
+  const handleLocationChange = (loc) => {
+    setForm((prev) => applyLocationToFormFields(prev, loc));
+    setLocationError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -104,7 +110,7 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
     }
 
     if (form.latitude == null || form.longitude == null) {
-      setLocationError('Please select your location on the map.');
+      setLocationError('Please select your location.');
       return;
     }
 
@@ -151,6 +157,13 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
         <input type="tel" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} required />
       </label>
 
+      <LocationSelector
+        location={locationFromFormFields(form)}
+        onLocationChange={handleLocationChange}
+        error={locationError}
+        title="Your location"
+      />
+
       <label className="profile-form__field">
         Address
         <textarea name="address" value={form.address} onChange={handleChange} rows={2} required />
@@ -165,16 +178,6 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
         Pincode
         <input type="text" name="pincode" value={form.pincode} onChange={handleChange} required />
       </label>
-
-      <LocationPickerMap
-        latitude={form.latitude}
-        longitude={form.longitude}
-        onChange={({ latitude, longitude }) => {
-          setForm((prev) => ({ ...prev, latitude, longitude }));
-          setLocationError('');
-        }}
-        error={locationError}
-      />
 
       <label className="profile-form__field">
         Blood group

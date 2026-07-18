@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountLocationService {
 
-    private final GoogleGeocodingService googleGeocodingService;
+    private final GeocodingService geocodingService;
 
-    public AccountLocationService(GoogleGeocodingService googleGeocodingService) {
-        this.googleGeocodingService = googleGeocodingService;
+    public AccountLocationService(GeocodingService geocodingService) {
+        this.geocodingService = geocodingService;
     }
 
     public void applyLocation(
@@ -33,7 +33,7 @@ public class AccountLocationService {
         }
 
         try {
-            GeoCoordinates coordinates = googleGeocodingService.geocodeAddress(query);
+            GeoCoordinates coordinates = geocodingService.geocodeAddress(query);
             account.setLatitude(coordinates.latitude());
             account.setLongitude(coordinates.longitude());
         } catch (RuntimeException ignored) {
@@ -59,7 +59,7 @@ public class AccountLocationService {
             String query = buildAddressQuery(addressLine, city, state, pinCode);
             if (!query.isBlank()) {
                 try {
-                    return googleGeocodingService.geocodeAddress(query);
+                    return geocodingService.geocodeAddress(query);
                 } catch (RuntimeException ignored) {
                     // fall through
                 }

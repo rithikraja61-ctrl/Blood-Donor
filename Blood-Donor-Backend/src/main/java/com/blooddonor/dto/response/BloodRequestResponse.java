@@ -11,7 +11,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class BloodRequestResponse {
 
     private Long id;
@@ -45,4 +45,7 @@ public class BloodRequestResponse {
     private LocalDateTime completedAt;
     private LocalDateTime requestSentDateTime;
     private LocalDateTime responseDateTime;
+    private Double requestLatitude;
+    private Double requestLongitude;
+    private Double distanceKm;
 }

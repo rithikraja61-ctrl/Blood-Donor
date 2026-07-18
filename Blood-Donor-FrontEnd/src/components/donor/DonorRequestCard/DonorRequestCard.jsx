@@ -1,4 +1,6 @@
 import './DonorRequestCard.css';
+import RequestLocationMap from '../../map/RequestLocationMap';
+import { formatDistanceKm } from '../../../utils/gpsUtils';
 
 function DonorRequestCard({ request, onAccept, onReject, actionLoadingId }) {
   const isPending = request.status === 'PENDING';
@@ -24,7 +26,10 @@ function DonorRequestCard({ request, onAccept, onReject, actionLoadingId }) {
         Requester: {request.requesterName} ({request.requesterType})
       </p>
       <p className="donor-request-card__meta">
-        Location: {request.requesterAddress}, {request.requesterPinCode}
+        Location: {request.requesterAddress}, {request.requesterCity} {request.requesterPinCode}
+      </p>
+      <p className="donor-request-card__distance">
+        {formatDistanceKm(request.distanceKm)}
       </p>
       <p className="donor-request-card__meta">
         Contact: {request.contactPersonName} · {request.contactPhoneNumber}
@@ -32,6 +37,12 @@ function DonorRequestCard({ request, onAccept, onReject, actionLoadingId }) {
       {request.reasonForBloodRequirement && (
         <p className="donor-request-card__reason">{request.reasonForBloodRequirement}</p>
       )}
+
+      <RequestLocationMap
+        latitude={request.requestLatitude}
+        longitude={request.requestLongitude}
+        label="Live requester location"
+      />
 
       {isPending && (
         <div className="donor-request-card__actions">

@@ -7,6 +7,9 @@ import {
   listDonorIncomingRequests,
   rejectDonorBloodRequest,
 } from '../../services/bloodRequestService';
+import { updateDonorLiveLocation } from '../../services/liveLocationService';
+import { getCurrentGpsPosition } from '../../utils/gpsUtils';
+import GpsCaptureButton from '../../components/map/GpsCaptureButton';
 import { ApiError } from '../../services/apiClient';
 import './DonorRequestsPage.css';
 
@@ -21,6 +24,13 @@ function DonorRequestsPage() {
     setError('');
 
     try {
+      try {
+        const position = await getCurrentGpsPosition();
+        await updateDonorLiveLocation(position.latitude, position.longitude);
+      } catch {
+        // Donor can still view requests; distance uses last saved location.
+      }
+
       const data = await listDonorIncomingRequests();
       setRequests(data);
     } catch (err) {
@@ -55,10 +65,12 @@ function DonorRequestsPage() {
     setError('');
 
     try {
-      await acceptDonorBloodRequest(requestId);
+      const position = await getCurrentGpsPosition();
+      await updateDonorLiveLocation(position.latitude, position.longitude);
+      await acceptDonorBloodRequest(requestId, position);
       await loadRequests();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to accept request.');
+      setError(err instanceof ApiError ? err.message : 'Failed to accept request. Allow GPS and try again.');
     } finally {
       setActionLoadingId(null);
     }
@@ -90,6 +102,20 @@ function DonorRequestsPage() {
       />
 
       {error && <p className="donor-requests-page__error">{error}</p>}
+
+      <GpsCaptureButton
+        onCapture={async (position) => {
+          if (!position) return;
+          try {
+            await updateDonorLiveLocation(position.latitude, position.longitude);
+            await loadRequests();
+          } catch (err) {
+            setError(err instanceof ApiError ? err.message : 'Failed to update live location.');
+          }
+        }}
+        label="Refresh my live location (GPS)"
+        capturedLabel="Your live location updated"
+      />
 
       {loading ? (
         <p className="donor-requests-page__loading">Loading requests…</p>

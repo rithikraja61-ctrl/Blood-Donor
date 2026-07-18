@@ -1,5 +1,6 @@
 package com.blooddonor.service.impl;
 
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.UserUpdateRequest;
 import com.blooddonor.dto.response.UserResponse;
 import com.blooddonor.entity.User;
@@ -60,6 +61,14 @@ public class UserServiceImpl implements UserService {
 
         User updatedUser = userRepository.save(user);
         return userMapper.toResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateLiveLocation(LiveLocationRequest request) {
+        User user = findCurrentUser();
+        user.setLatitude(request.getLatitude());
+        user.setLongitude(request.getLongitude());
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override

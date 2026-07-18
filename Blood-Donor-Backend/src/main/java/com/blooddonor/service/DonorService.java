@@ -2,6 +2,7 @@ package com.blooddonor.service;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
 import com.blooddonor.dto.response.CursorDonorSearchResponse;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
 
@@ -12,6 +13,8 @@ public interface DonorService {
     DonorDashboardResponse getDashboard();
 
     DonorResponse updateProfile(DonorUpdateRequest request);
+
+    DonorResponse updateLiveLocation(LiveLocationRequest request);
 
     void deleteAccount();
 

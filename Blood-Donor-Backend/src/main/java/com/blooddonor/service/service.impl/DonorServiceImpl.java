@@ -1,6 +1,7 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.response.CursorDonorSearchResponse;
 import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
@@ -103,6 +104,14 @@ public class DonorServiceImpl implements DonorService {
 
         Donor updatedDonor = donorRepository.save(donor);
         return donorMapper.toResponse(updatedDonor);
+    }
+
+    @Override
+    public DonorResponse updateLiveLocation(LiveLocationRequest request) {
+        Donor donor = findCurrentDonor();
+        donor.setLatitude(request.getLatitude());
+        donor.setLongitude(request.getLongitude());
+        return donorMapper.toResponse(donorRepository.save(donor));
     }
 
     @Override

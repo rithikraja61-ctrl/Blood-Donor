@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class SendBloodRequestDto {
+public class SendBloodRequestDto extends LocationRequest {
 
     @NotNull(message = "Patient id is required")
     private Long patientId;

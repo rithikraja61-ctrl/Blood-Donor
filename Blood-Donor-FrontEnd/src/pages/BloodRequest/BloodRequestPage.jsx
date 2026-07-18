@@ -7,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import PageHeader from '../../components/common/PageHeader';
 
 import { sendUserBloodRequest } from '../../services/bloodRequestService';
+import { updateUserLiveLocation } from '../../services/liveLocationService';
+import GpsCaptureButton from '../../components/map/GpsCaptureButton';
 
 import { ApiError } from '../../services/apiClient';
 
@@ -43,6 +45,7 @@ function BloodRequestPage() {
   const [error, setError] = useState('');
 
   const [success, setSuccess] = useState(null);
+  const [liveLocation, setLiveLocation] = useState(null);
 
 
 
@@ -130,11 +133,23 @@ function BloodRequestPage() {
 
 
 
+    if (!liveLocation?.latitude || !liveLocation?.longitude) {
+
+      setError('Please capture your live GPS location before sending the request.');
+
+      return;
+
+    }
+
+
+
     setLoading(true);
 
 
 
     try {
+
+      await updateUserLiveLocation(liveLocation.latitude, liveLocation.longitude);
 
       const responses = await sendUserBloodRequest({
 
@@ -147,6 +162,10 @@ function BloodRequestPage() {
         requiredBeforeDateTime: form.requiredBeforeDateTime,
 
         reasonForBloodRequirement: form.reasonForBloodRequirement.trim() || undefined,
+
+        latitude: liveLocation.latitude,
+
+        longitude: liveLocation.longitude,
 
       });
 
@@ -161,6 +180,7 @@ function BloodRequestPage() {
       });
 
       setForm(INITIAL);
+      setLiveLocation(null);
 
     } catch (err) {
 
@@ -192,7 +212,21 @@ function BloodRequestPage() {
 
         title="Request Blood"
 
-        subtitle="Your request is broadcast automatically to eligible donors in your pincode and nearby areas."
+        subtitle="Capture your live GPS location and broadcast to eligible donors nearby."
+
+      />
+
+
+
+      <GpsCaptureButton
+
+        required
+
+        onCapture={setLiveLocation}
+
+        label="Update live location with GPS"
+
+        capturedLabel="Live location ready"
 
       />
 

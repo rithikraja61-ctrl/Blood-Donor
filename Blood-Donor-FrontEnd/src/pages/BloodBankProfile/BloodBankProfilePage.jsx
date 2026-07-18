@@ -6,7 +6,8 @@ import {
   updateBloodBankProfile,
 } from '../../services/bloodBankService';
 import { ApiError } from '../../services/apiClient';
-import LocationPickerMap from '../../components/map/LocationPickerMap';
+import LocationSelector from '../../components/map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import { useAuth } from '../../context/AuthContext';
 import '../DonorProfile/DonorProfilePage.css';
 
@@ -53,6 +54,11 @@ function BloodBankProfilePage() {
         setError(err instanceof ApiError ? err.message : 'Failed to load profile.');
       });
   }, []);
+
+  const handleLocationChange = (loc) => {
+    setForm((prev) => applyLocationToFormFields(prev, loc, 'Blood Bank'));
+    setLocationError('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -111,19 +117,16 @@ function BloodBankProfilePage() {
         <CommonInput id="name" label="Blood bank name" name="name" value={form.name} onChange={handleChange} />
         <CommonInput id="email" label="Email" name="email" type="email" value={form.email} onChange={handleChange} />
         <CommonInput id="phoneNumber" label="Phone" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} />
+        <LocationSelector
+          location={locationFromFormFields(form)}
+          onLocationChange={handleLocationChange}
+          error={locationError}
+          title="Blood bank location"
+        />
         <CommonInput id="address" label="Address" name="address" value={form.address} onChange={handleChange} />
         <CommonInput id="city" label="City" name="city" value={form.city} onChange={handleChange} />
         <CommonInput id="state" label="State" name="state" value={form.state} onChange={handleChange} />
         <CommonInput id="pincode" label="PIN code" name="pincode" value={form.pincode} onChange={handleChange} />
-        <LocationPickerMap
-          latitude={form.latitude}
-          longitude={form.longitude}
-          onChange={({ latitude, longitude }) => {
-            setForm((prev) => ({ ...prev, latitude, longitude }));
-            setLocationError('');
-          }}
-          error={locationError}
-        />
         <CommonInput id="licenseNumber" label="License number" name="licenseNumber" value={form.licenseNumber} onChange={handleChange} />
         <CommonInput id="profileImageUrl" label="Profile image URL" name="profileImageUrl" value={form.profileImageUrl} onChange={handleChange} />
         <button type="submit" className="auth-form__submit" disabled={saving}>

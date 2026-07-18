@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
 import DonorSearchFilters from '../../components/donor/DonorSearchFilters';
-import LocationPickerMap from '../../components/map/LocationPickerMap';
 import { searchDonors } from '../../services/donorService';
 import { ApiError } from '../../services/apiClient';
 import { mapDonorsFromApi } from '../../utils/donorMapper';
@@ -29,44 +28,29 @@ function FindDonorPage() {
     bloodGroup: user?.bloodGroup || 'O+',
     pincode: user?.pincode || '',
     availability: 'All',
-    latitude: user?.latitude ?? null,
-    longitude: user?.longitude ?? null,
   });
   const [donors, setDonors] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
-  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     setFilters((prev) => ({
       ...prev,
       bloodGroup: prev.bloodGroup || user?.bloodGroup || 'O+',
       pincode: prev.pincode || user?.pincode || '',
-      latitude: prev.latitude ?? user?.latitude ?? null,
-      longitude: prev.longitude ?? user?.longitude ?? null,
     }));
-  }, [user?.bloodGroup, user?.pincode, user?.latitude, user?.longitude]);
+  }, [user?.bloodGroup, user?.pincode]);
 
   const handleSearch = useCallback(async () => {
     setError('');
-    setLocationError('');
-
-    const hasCoordinates = filters.latitude != null && filters.longitude != null;
-    const hasPincode = /^[0-9]{6}$/.test(filters.pincode);
-
-    if (!hasCoordinates && !hasPincode) {
-      setError('Enter a valid 6-digit PIN code or select a location on the map.');
+    if (!/^[0-9]{6}$/.test(filters.pincode)) {
+      setError('Enter a valid 6-digit PIN code.');
       return;
     }
-
     setSearchLoading(true);
     try {
-      const data = await searchDonors(filters.bloodGroup, {
-        pinCode: hasPincode ? filters.pincode : undefined,
-        latitude: hasCoordinates ? filters.latitude : undefined,
-        longitude: hasCoordinates ? filters.longitude : undefined,
-      });
+      const data = await searchDonors(filters.bloodGroup, filters.pincode);
       setDonors(mapDonorsFromApi(data.content));
       setHasSearched(true);
     } catch (err) {
@@ -76,7 +60,7 @@ function FindDonorPage() {
     } finally {
       setSearchLoading(false);
     }
-  }, [filters.bloodGroup, filters.pincode, filters.latitude, filters.longitude]);
+  }, [filters.bloodGroup, filters.pincode]);
 
   const filteredDonors = donors.filter((d) => {
     const matchName = d.name.toLowerCase().includes(filters.search.toLowerCase());
@@ -89,7 +73,7 @@ function FindDonorPage() {
     <div className="find-donor-page">
       <PageHeader
         title="Find donors"
-        subtitle="Search by blood group and map location. Nearby donors are ranked by distance."
+        subtitle="Search by blood group and PIN code. Contact available donors directly."
       />
 
       <DonorSearchFilters
@@ -109,26 +93,13 @@ function FindDonorPage() {
             bloodGroup: user?.bloodGroup || 'O+',
             pincode: user?.pincode || '',
             availability: 'All',
-            latitude: user?.latitude ?? null,
-            longitude: user?.longitude ?? null,
           });
           setDonors([]);
           setHasSearched(false);
           setError('');
-          setLocationError('');
         }}
         onSearch={handleSearch}
         loading={searchLoading}
-      />
-
-      <LocationPickerMap
-        latitude={filters.latitude}
-        longitude={filters.longitude}
-        onChange={({ latitude, longitude }) => {
-          setFilters((prev) => ({ ...prev, latitude, longitude }));
-          setLocationError('');
-        }}
-        error={locationError}
       />
 
       {error && <p className="find-donor-page__error">{error}</p>}
@@ -140,13 +111,13 @@ function FindDonorPage() {
 
       {!hasSearched && !searchLoading && (
         <p className="find-donor-page__hint">
-          Set blood group and pick a search location on the map (or enter PIN), then click Search donors.
-          Update your <Link to={ROUTES.PROFILE}>profile</Link> if defaults are empty.
+          Set PIN and blood group, then click Search donors. Update your{' '}
+          <Link to={ROUTES.PROFILE}>profile</Link> to set your location and PIN code.
         </p>
       )}
 
       {hasSearched && filteredDonors.length === 0 && !searchLoading && (
-        <EmptyState message="No donors match your search. Try another location or blood group." />
+        <EmptyState message="No donors match your search. Try another PIN or blood group." />
       )}
 
       {filteredDonors.length > 0 && (
