@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BloodBankSignupRequest {
+public class BloodBankSignupRequest extends LocationRequest {
 
     @NotBlank(message = "Blood bank name is required")
     private String name;

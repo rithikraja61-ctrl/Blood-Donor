@@ -19,4 +19,6 @@ public class UserResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String pincode;
+    private Double latitude;
+    private Double longitude;
 }

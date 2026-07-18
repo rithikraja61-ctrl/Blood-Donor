@@ -25,4 +25,6 @@ public class DonorResponse {
     private LocalDate lastDonationDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Double latitude;
+    private Double longitude;
 }

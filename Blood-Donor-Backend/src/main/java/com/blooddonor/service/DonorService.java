@@ -18,6 +18,9 @@ public interface DonorService {
     CursorDonorSearchResponse searchDonors(
             String bloodGroup,
             String pinCode,
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
             int limit,
             String nextCursor,
             String previousCursor);

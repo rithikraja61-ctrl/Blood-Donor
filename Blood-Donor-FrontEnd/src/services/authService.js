@@ -7,6 +7,11 @@ import { apiRequest } from './apiClient';
 
 function buildSignupPayload(role, formData) {
   const pincode = formData.pincode.trim();
+  const locationFields = {};
+  if (formData.latitude != null && formData.longitude != null) {
+    locationFields.latitude = formData.latitude;
+    locationFields.longitude = formData.longitude;
+  }
 
   if (role === 'User' || role === 'Donor') {
     const payload = {
@@ -17,6 +22,7 @@ function buildSignupPayload(role, formData) {
       address: formData.address.trim(),
       bloodType: BLOOD_GROUP_TO_TYPE[formData.bloodGroup],
       pincode,
+      ...locationFields,
     };
 
     if (role === 'Donor') {
@@ -37,6 +43,7 @@ function buildSignupPayload(role, formData) {
       state: formData.hospitalState.trim(),
       licenseNumber: formData.hospitalLicenseNumber.trim(),
       pincode,
+      ...locationFields,
     };
   }
 
@@ -50,6 +57,7 @@ function buildSignupPayload(role, formData) {
     state: formData.bloodBankState.trim(),
     licenseNumber: formData.bloodBankLicenseNumber.trim(),
     pincode,
+    ...locationFields,
   };
 
   if (formData.profileImageUrl?.trim()) {
@@ -92,6 +100,8 @@ export function mapBackendFieldErrors(fieldErrors, role) {
       mapped.phone = msg;
     } else if (key === 'bloodType') {
       mapped.bloodGroup = msg;
+    } else if (key === 'latitude' || key === 'longitude') {
+      mapped.location = msg;
     } else {
       mapped[key] = msg;
     }

@@ -6,6 +6,7 @@ import {
   updateHospitalProfile,
 } from '../../services/hospitalService';
 import { ApiError } from '../../services/apiClient';
+import LocationPickerMap from '../../components/map/LocationPickerMap';
 import '../DonorProfile/DonorProfilePage.css';
 
 const EMPTY = {
@@ -16,6 +17,8 @@ const EMPTY = {
   state: '',
   pincode: '',
   licenseNumber: '',
+  latitude: null,
+  longitude: null,
 };
 
 function HospitalProfilePage() {
@@ -24,6 +27,7 @@ function HospitalProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     getHospitalProfile()
@@ -37,6 +41,8 @@ function HospitalProfilePage() {
           state: data.state || '',
           pincode: data.pincode || '',
           licenseNumber: data.licenseNumber || '',
+          latitude: data.latitude ?? null,
+          longitude: data.longitude ?? null,
         });
       })
       .catch((err) => {
@@ -52,9 +58,14 @@ function HospitalProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your hospital location on the map.');
+      return;
+    }
     setSaving(true);
     setError('');
     setSuccess('');
+    setLocationError('');
     try {
       const updated = await updateHospitalProfile(form);
       setProfile(updated);
@@ -89,6 +100,15 @@ function HospitalProfilePage() {
         <CommonInput id="city" label="City" name="city" value={form.city} onChange={handleChange} />
         <CommonInput id="state" label="State" name="state" value={form.state} onChange={handleChange} />
         <CommonInput id="pincode" label="PIN code" name="pincode" value={form.pincode} onChange={handleChange} />
+        <LocationPickerMap
+          latitude={form.latitude}
+          longitude={form.longitude}
+          onChange={({ latitude, longitude }) => {
+            setForm((prev) => ({ ...prev, latitude, longitude }));
+            setLocationError('');
+          }}
+          error={locationError}
+        />
         <CommonInput id="licenseNumber" label="License number" name="licenseNumber" value={form.licenseNumber} onChange={handleChange} />
         <button type="submit" className="auth-form__submit" disabled={saving}>
           {saving ? 'Saving…' : 'Save changes'}

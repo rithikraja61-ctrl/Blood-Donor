@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Pattern;
 
 @Getter
 @Setter
-public class UserSignupRequest {
+public class UserSignupRequest extends LocationRequest {
 
     @NotBlank(message = "Pincode is required")
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")

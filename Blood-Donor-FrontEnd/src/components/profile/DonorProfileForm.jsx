@@ -5,6 +5,7 @@ import {
   TYPE_TO_BLOOD_GROUP,
 } from '../../utils/constants';
 import { ApiError } from '../../services/apiClient';
+import LocationPickerMap from '../map/LocationPickerMap';
 import './ProfileForm.css';
 
 const PHONE_REGEX = /^[0-9]{10,15}$/;
@@ -20,7 +21,10 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
     bloodGroup: '',
     available: true,
     password: '',
+    latitude: null,
+    longitude: null,
   });
+  const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -38,6 +42,8 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
           : '',
         available: profile.available ?? true,
         password: '',
+        latitude: profile.latitude ?? null,
+        longitude: profile.longitude ?? null,
       });
     }
   }, [profile]);
@@ -97,6 +103,11 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
       return;
     }
 
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your location on the map.');
+      return;
+    }
+
     const payload = {
       name: form.name.trim(),
       phoneNumber: form.phoneNumber,
@@ -105,6 +116,8 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
       pincode: form.pincode,
       bloodType: BLOOD_GROUP_TO_TYPE[form.bloodGroup],
       available: form.available,
+      latitude: form.latitude,
+      longitude: form.longitude,
     };
 
     if (form.password.trim()) {
@@ -152,6 +165,16 @@ function DonorProfileForm({ profile, onSave, onCancel }) {
         Pincode
         <input type="text" name="pincode" value={form.pincode} onChange={handleChange} required />
       </label>
+
+      <LocationPickerMap
+        latitude={form.latitude}
+        longitude={form.longitude}
+        onChange={({ latitude, longitude }) => {
+          setForm((prev) => ({ ...prev, latitude, longitude }));
+          setLocationError('');
+        }}
+        error={locationError}
+      />
 
       <label className="profile-form__field">
         Blood group

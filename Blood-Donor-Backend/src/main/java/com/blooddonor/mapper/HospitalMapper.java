@@ -42,6 +42,8 @@ public class HospitalMapper {
                 .profileImageUrl(hospital.getProfileImageUrl())
                 .registrationDate(hospital.getCreatedAt())
                 .updatedAt(hospital.getUpdatedAt())
+                .latitude(hospital.getLatitude())
+                .longitude(hospital.getLongitude())
                 .build();
     }
 
@@ -54,5 +56,7 @@ public class HospitalMapper {
         Optional.ofNullable(request.getState()).ifPresent(hospital::setState);
         Optional.ofNullable(request.getLicenseNumber()).ifPresent(hospital::setLicenseNumber);
         Optional.ofNullable(request.getProfileImageUrl()).ifPresent(hospital::setProfileImageUrl);
+        Optional.ofNullable(request.getLatitude()).ifPresent(hospital::setLatitude);
+        Optional.ofNullable(request.getLongitude()).ifPresent(hospital::setLongitude);
     }
 }

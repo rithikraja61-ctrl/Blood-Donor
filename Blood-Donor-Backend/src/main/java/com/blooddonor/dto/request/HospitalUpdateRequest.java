@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class HospitalUpdateRequest {
+public class HospitalUpdateRequest extends LocationRequest {
 
     private String name;
     private String phoneNumber;

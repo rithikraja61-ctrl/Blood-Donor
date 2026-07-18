@@ -42,6 +42,8 @@ public class BloodBankMapper {
                 .profileImage(bloodBank.getProfileImageUrl())
                 .createdAt(bloodBank.getCreatedAt())
                 .updatedAt(bloodBank.getUpdatedAt())
+                .latitude(bloodBank.getLatitude())
+                .longitude(bloodBank.getLongitude())
                 .build();
     }
 
@@ -55,5 +57,7 @@ public class BloodBankMapper {
         Optional.ofNullable(request.getState()).ifPresent(bloodBank::setState);
         Optional.ofNullable(request.getLicenseNumber()).ifPresent(bloodBank::setLicenseNumber);
         Optional.ofNullable(request.getProfileImageUrl()).ifPresent(bloodBank::setProfileImageUrl);
+        Optional.ofNullable(request.getLatitude()).ifPresent(bloodBank::setLatitude);
+        Optional.ofNullable(request.getLongitude()).ifPresent(bloodBank::setLongitude);
     }
 }

@@ -7,6 +7,7 @@ import { getPostLoginRoute } from '../../utils/roleRoutes';
 import RoleSelector from './RoleSelector';
 import CommonInput from './CommonInput';
 import PasswordInput from './PasswordInput';
+import LocationPickerMap from '../map/LocationPickerMap';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[0-9]{10,15}$/;
@@ -51,6 +52,8 @@ const INITIAL_FORM = {
   licenseNumber: '',
   password: '',
   confirmPassword: '',
+  latitude: null,
+  longitude: null,
 };
 
 function SignupForm() {
@@ -81,6 +84,13 @@ function SignupForm() {
   const handleRoleChange = (role) => {
     setActiveRole(role);
     setErrors({});
+    setSubmitError('');
+    setFormData((prev) => ({ ...prev, latitude: null, longitude: null }));
+  };
+
+  const handleLocationChange = ({ latitude, longitude }) => {
+    setFormData((prev) => ({ ...prev, latitude, longitude }));
+    if (errors.location) setErrors((prev) => ({ ...prev, location: '' }));
     setSubmitError('');
   };
 
@@ -137,6 +147,10 @@ function SignupForm() {
 
     validatePincode(d, e);
     validatePasswordFields(d, e);
+
+    if (d.latitude == null || d.longitude == null) {
+      e.location = 'Please select your location on the map';
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -386,6 +400,13 @@ function SignupForm() {
         onChange={handleChange}
         error={errors.pincode}
         placeholder="Enter your pincode"
+      />
+
+      <LocationPickerMap
+        latitude={formData.latitude}
+        longitude={formData.longitude}
+        onChange={handleLocationChange}
+        error={errors.location}
       />
 
       <PasswordInput

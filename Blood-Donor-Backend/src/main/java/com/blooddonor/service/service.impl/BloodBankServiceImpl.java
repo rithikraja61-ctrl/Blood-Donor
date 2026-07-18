@@ -7,6 +7,7 @@ import com.blooddonor.exception.BloodBankNotFoundException;
 import com.blooddonor.mapper.BloodBankMapper;
 import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.service.BloodBankService;
+import com.blooddonor.service.AccountLocationService;
 import com.blooddonor.util.SecurityUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,16 +19,19 @@ public class BloodBankServiceImpl implements BloodBankService {
     private final BloodBankMapper bloodBankMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
+    private final AccountLocationService accountLocationService;
 
     public BloodBankServiceImpl(
             BloodBankRepository bloodBankRepository,
             BloodBankMapper bloodBankMapper,
             SecurityUtil securityUtil,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AccountLocationService accountLocationService) {
         this.bloodBankRepository = bloodBankRepository;
         this.bloodBankMapper = bloodBankMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
+        this.accountLocationService = accountLocationService;
     }
 
     @Override
@@ -40,6 +44,15 @@ public class BloodBankServiceImpl implements BloodBankService {
     public BloodBankResponse updateProfile(BloodBankUpdateRequest request) {
         BloodBank bloodBank = findCurrentBloodBank();
         bloodBankMapper.updateEntity(bloodBank, request);
+
+        accountLocationService.applyLocation(
+                bloodBank,
+                request.getLatitude(),
+                request.getLongitude(),
+                bloodBank.getAddress(),
+                bloodBank.getCity(),
+                bloodBank.getState(),
+                bloodBank.getPincode());
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             bloodBank.setPassword(passwordEncoder.encode(request.getPassword()));

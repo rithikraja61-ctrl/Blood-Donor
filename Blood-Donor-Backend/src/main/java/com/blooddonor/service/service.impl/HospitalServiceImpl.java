@@ -10,6 +10,7 @@ import com.blooddonor.repository.BloodRequestRepository;
 import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.service.HospitalService;
+import com.blooddonor.service.AccountLocationService;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
 import com.blooddonor.validation.PatientRequestStatus;
@@ -25,6 +26,7 @@ public class HospitalServiceImpl implements HospitalService {
     private final HospitalMapper hospitalMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
+    private final AccountLocationService accountLocationService;
 
     public HospitalServiceImpl(
             HospitalRepository hospitalRepository,
@@ -32,13 +34,15 @@ public class HospitalServiceImpl implements HospitalService {
             BloodRequestRepository bloodRequestRepository,
             HospitalMapper hospitalMapper,
             SecurityUtil securityUtil,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AccountLocationService accountLocationService) {
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
         this.bloodRequestRepository = bloodRequestRepository;
         this.hospitalMapper = hospitalMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
+        this.accountLocationService = accountLocationService;
     }
 
     @Override
@@ -50,6 +54,15 @@ public class HospitalServiceImpl implements HospitalService {
     public HospitalResponse updateProfile(HospitalUpdateRequest request) {
         Hospital hospital = findCurrentHospital();
         hospitalMapper.updateEntity(hospital, request);
+
+        accountLocationService.applyLocation(
+                hospital,
+                request.getLatitude(),
+                request.getLongitude(),
+                hospital.getAddress(),
+                hospital.getCity(),
+                hospital.getState(),
+                hospital.getPincode());
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             hospital.setPassword(passwordEncoder.encode(request.getPassword()));

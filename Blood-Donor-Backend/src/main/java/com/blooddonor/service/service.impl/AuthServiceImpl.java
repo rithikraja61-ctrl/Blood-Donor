@@ -3,6 +3,7 @@ package com.blooddonor.service.impl;
 import com.blooddonor.dto.request.BloodBankSignupRequest;
 import com.blooddonor.dto.request.DonorSignupRequest;
 import com.blooddonor.dto.request.HospitalSignupRequest;
+import com.blooddonor.dto.request.LocationRequest;
 import com.blooddonor.dto.request.LoginRequest;
 import com.blooddonor.dto.request.UserSignupRequest;
 import com.blooddonor.dto.response.AuthResponse;
@@ -23,6 +24,7 @@ import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.UserRepository;
 import com.blooddonor.security.CustomUserDetails;
 import com.blooddonor.service.AuthService;
+import com.blooddonor.service.AccountLocationService;
 import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.util.JwtUtil;
 import com.blooddonor.validation.Role;
@@ -44,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final HospitalMapper hospitalMapper;
     private final BloodBankMapper bloodBankMapper;
     private final BloodBankInventoryService bloodBankInventoryService;
+    private final AccountLocationService accountLocationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -58,6 +61,7 @@ public class AuthServiceImpl implements AuthService {
             HospitalMapper hospitalMapper,
             BloodBankMapper bloodBankMapper,
             BloodBankInventoryService bloodBankInventoryService,
+            AccountLocationService accountLocationService,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
             AuthenticationManager authenticationManager) {
@@ -70,6 +74,7 @@ public class AuthServiceImpl implements AuthService {
         this.hospitalMapper = hospitalMapper;
         this.bloodBankMapper = bloodBankMapper;
         this.bloodBankInventoryService = bloodBankInventoryService;
+        this.accountLocationService = accountLocationService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
@@ -83,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        applySignupLocation(user, request, request.getAddress(), null, null, request.getPincode());
         User savedUser = userRepository.save(user);
 
         return buildAuthResponse(savedUser);
@@ -96,6 +102,7 @@ public class AuthServiceImpl implements AuthService {
 
         Donor donor = donorMapper.toEntity(request);
         donor.setPassword(passwordEncoder.encode(request.getPassword()));
+        applySignupLocation(donor, request, request.getAddress(), request.getCity(), null, request.getPincode());
         Donor savedDonor = donorRepository.save(donor);
 
         return buildAuthResponse(savedDonor);
@@ -109,6 +116,13 @@ public class AuthServiceImpl implements AuthService {
 
         Hospital hospital = hospitalMapper.toEntity(request);
         hospital.setPassword(passwordEncoder.encode(request.getPassword()));
+        applySignupLocation(
+                hospital,
+                request,
+                request.getAddress(),
+                request.getCity(),
+                request.getState(),
+                request.getPincode());
         Hospital savedHospital = hospitalRepository.save(hospital);
 
         return buildAuthResponse(savedHospital);
@@ -122,6 +136,13 @@ public class AuthServiceImpl implements AuthService {
 
         BloodBank bloodBank = bloodBankMapper.toEntity(request);
         bloodBank.setPassword(passwordEncoder.encode(request.getPassword()));
+        applySignupLocation(
+                bloodBank,
+                request,
+                request.getAddress(),
+                request.getCity(),
+                request.getState(),
+                request.getPincode());
         BloodBank savedBloodBank = bloodBankRepository.save(bloodBank);
         bloodBankInventoryService.initializeInventoryForBloodBank(savedBloodBank.getId());
 
@@ -170,5 +191,22 @@ public class AuthServiceImpl implements AuthService {
                 .email(account.getEmail())
                 .role(account.getRole())
                 .build();
+    }
+
+    private void applySignupLocation(
+            BaseAccount account,
+            LocationRequest request,
+            String address,
+            String city,
+            String state,
+            String pincode) {
+        accountLocationService.applyLocation(
+                account,
+                request.getLatitude(),
+                request.getLongitude(),
+                address,
+                city,
+                state,
+                pincode);
     }
 }

@@ -1,0 +1,35 @@
+.location-picker-map {
+  margin: 1rem 0;
+}
+
+.location-picker-map__hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #666);
+}
+
+.location-picker-map__coords {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #666);
+}
+
+.location-picker-map__error {
+  margin: 0.5rem 0 0;
+  color: var(--color-error, #c00);
+  font-size: 0.875rem;
+}
+
+.location-picker-map--loading,
+.location-picker-map--error {
+  padding: 1rem;
+  border: 1px dashed var(--color-border, #ccc);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #666);
+}
+
+.location-picker-map--error {
+  color: var(--color-error, #c00);
+  border-color: var(--color-error, #c00);
+}

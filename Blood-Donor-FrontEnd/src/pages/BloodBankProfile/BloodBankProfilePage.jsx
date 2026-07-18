@@ -6,6 +6,7 @@ import {
   updateBloodBankProfile,
 } from '../../services/bloodBankService';
 import { ApiError } from '../../services/apiClient';
+import LocationPickerMap from '../../components/map/LocationPickerMap';
 import { useAuth } from '../../context/AuthContext';
 import '../DonorProfile/DonorProfilePage.css';
 
@@ -19,6 +20,8 @@ const EMPTY = {
   pincode: '',
   licenseNumber: '',
   profileImageUrl: '',
+  latitude: null,
+  longitude: null,
 };
 
 function BloodBankProfilePage() {
@@ -27,6 +30,7 @@ function BloodBankProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     getBloodBankProfile()
@@ -41,6 +45,8 @@ function BloodBankProfilePage() {
           pincode: data.pinCode || data.pincode || '',
           licenseNumber: data.licenseNumber || '',
           profileImageUrl: data.profileImage || data.profileImageUrl || '',
+          latitude: data.latitude ?? null,
+          longitude: data.longitude ?? null,
         });
       })
       .catch((err) => {
@@ -56,9 +62,14 @@ function BloodBankProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your blood bank location on the map.');
+      return;
+    }
     setSaving(true);
     setError('');
     setSuccess('');
+    setLocationError('');
     try {
       const updated = await updateBloodBankProfile({
         name: form.name,
@@ -70,6 +81,8 @@ function BloodBankProfilePage() {
         pincode: form.pincode,
         licenseNumber: form.licenseNumber,
         profileImageUrl: form.profileImageUrl || undefined,
+        latitude: form.latitude,
+        longitude: form.longitude,
       });
       syncProfile({
         ...updated,
@@ -102,6 +115,15 @@ function BloodBankProfilePage() {
         <CommonInput id="city" label="City" name="city" value={form.city} onChange={handleChange} />
         <CommonInput id="state" label="State" name="state" value={form.state} onChange={handleChange} />
         <CommonInput id="pincode" label="PIN code" name="pincode" value={form.pincode} onChange={handleChange} />
+        <LocationPickerMap
+          latitude={form.latitude}
+          longitude={form.longitude}
+          onChange={({ latitude, longitude }) => {
+            setForm((prev) => ({ ...prev, latitude, longitude }));
+            setLocationError('');
+          }}
+          error={locationError}
+        />
         <CommonInput id="licenseNumber" label="License number" name="licenseNumber" value={form.licenseNumber} onChange={handleChange} />
         <CommonInput id="profileImageUrl" label="Profile image URL" name="profileImageUrl" value={form.profileImageUrl} onChange={handleChange} />
         <button type="submit" className="auth-form__submit" disabled={saving}>

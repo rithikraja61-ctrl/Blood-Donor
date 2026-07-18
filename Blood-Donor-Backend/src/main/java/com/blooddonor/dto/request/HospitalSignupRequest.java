@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class HospitalSignupRequest {
+public class HospitalSignupRequest extends LocationRequest {
 
     @NotBlank(message = "Pincode is required")
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")

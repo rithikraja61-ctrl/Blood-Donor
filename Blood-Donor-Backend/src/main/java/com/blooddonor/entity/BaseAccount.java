@@ -51,6 +51,10 @@ public abstract class BaseAccount {
     @Column(nullable = false, length = 6)
     private String pincode;
 
+    private Double latitude;
+
+    private Double longitude;
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();

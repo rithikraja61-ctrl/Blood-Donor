@@ -21,6 +21,8 @@ import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.repository.UserRepository;
 import com.blooddonor.service.BloodRequestService;
+import com.blooddonor.config.GoogleMapsProperties;
+import com.blooddonor.util.GeoCoordinates;
 import com.blooddonor.util.EligibleDonorFinder;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
@@ -49,6 +51,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
     private final BloodRequestMapper bloodRequestMapper;
     private final SecurityUtil securityUtil;
     private final EligibleDonorFinder eligibleDonorFinder;
+    private final GoogleMapsProperties googleMapsProperties;
 
     public BloodRequestServiceImpl(
             BloodRequestRepository bloodRequestRepository,
@@ -59,7 +62,8 @@ public class BloodRequestServiceImpl implements BloodRequestService {
             BloodBankRepository bloodBankRepository,
             BloodRequestMapper bloodRequestMapper,
             SecurityUtil securityUtil,
-            EligibleDonorFinder eligibleDonorFinder) {
+            EligibleDonorFinder eligibleDonorFinder,
+            GoogleMapsProperties googleMapsProperties) {
         this.bloodRequestRepository = bloodRequestRepository;
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
@@ -69,6 +73,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         this.bloodRequestMapper = bloodRequestMapper;
         this.securityUtil = securityUtil;
         this.eligibleDonorFinder = eligibleDonorFinder;
+        this.googleMapsProperties = googleMapsProperties;
     }
 
     @Override
@@ -90,7 +95,12 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         expirePendingRequestsForPatient(patient.getId());
 
         String bloodGroup = patient.getBloodType().getDisplayName();
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, hospital.getPincode());
+        GeoCoordinates hospitalOrigin = resolveHospitalOrigin(hospital);
+        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup,
+                hospitalOrigin,
+                hospital.getPincode(),
+                googleMapsProperties.getDefaultSearchRadiusKm());
 
         if (nearbyDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
@@ -518,6 +528,16 @@ public class BloodRequestServiceImpl implements BloodRequestService {
             pending.setRespondedAt(now);
             bloodRequestRepository.save(pending);
         }
+    }
+
+    private GeoCoordinates resolveHospitalOrigin(Hospital hospital) {
+        if (hospital.getLatitude() != null && hospital.getLongitude() != null) {
+            GeoCoordinates coordinates = new GeoCoordinates(hospital.getLatitude(), hospital.getLongitude());
+            if (coordinates.isValid()) {
+                return coordinates;
+            }
+        }
+        return null;
     }
 
     private Hospital findCurrentHospital() {
