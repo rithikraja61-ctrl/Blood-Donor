@@ -37,6 +37,7 @@ public class PatientMapper {
                 .gender(patient.getGender())
                 .bloodType(patient.getBloodType())
                 .bloodGroup(patient.getBloodType().getDisplayName())
+                .unitsRequired(patient.getUnitsRequired())
                 .reasonForBlood(patient.getReasonForBlood())
                 .requiredBeforeDate(patient.getRequiredBeforeDate())
                 .donorAssigned(patient.isDonorAssigned())

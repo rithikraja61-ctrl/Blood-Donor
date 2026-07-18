@@ -1,3 +1,32 @@
+@keyframes blood-bank-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blood-bank-count-pop {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes blood-bank-icon-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 .blood-bank-home__section-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -18,21 +47,51 @@
   gap: 0.75rem 1rem;
   align-items: center;
   padding: 1.1rem 1.25rem;
-  background: var(--color-white);
-  border: 1px solid var(--landing-border);
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  border: 1px solid transparent;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+  animation: blood-bank-fade-up 0.45s ease both;
+}
+
+.blood-bank-home__request-card:nth-child(2) {
+  animation-delay: 0.08s;
 }
 
 .blood-bank-home__request-card:hover {
-  box-shadow: var(--landing-shadow);
-  border-color: var(--color-blood-red);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
 
-.blood-bank-home__request-card--donor {
-  cursor: default;
+.blood-bank-home__request-card--received {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #6ee7b7;
+}
+
+.blood-bank-home__request-card--received:hover {
+  border-color: #059669;
+}
+
+.blood-bank-home__request-card--received .blood-bank-home__request-counts strong {
+  color: #047857;
+}
+
+.blood-bank-home__request-card--send {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.blood-bank-home__request-card--send:hover {
+  border-color: #2563eb;
+}
+
+.blood-bank-home__request-card--send .blood-bank-home__request-counts strong {
+  color: #1d4ed8;
 }
 
 .blood-bank-home__request-card h2 {
@@ -48,6 +107,11 @@
 
 .blood-bank-home__request-icon {
   font-size: 1.75rem;
+  animation: blood-bank-icon-float 2.8s ease-in-out infinite;
+}
+
+.blood-bank-home__request-card--send .blood-bank-home__request-icon {
+  animation-delay: 0.4s;
 }
 
 .blood-bank-home__request-counts {
@@ -59,7 +123,8 @@
 .blood-bank-home__request-counts strong {
   display: block;
   font-size: 1.35rem;
-  color: var(--color-blood-red);
+  font-weight: 800;
+  animation: blood-bank-count-pop 2.4s ease-in-out infinite;
 }
 
 .blood-bank-home__request-counts span {
@@ -67,4 +132,168 @@
   text-transform: uppercase;
   color: var(--landing-text-muted);
   font-weight: 600;
+}
+
+/* Stats grid */
+.blood-bank-home__stats-section {
+  margin-bottom: 1.75rem;
+  animation: blood-bank-fade-up 0.5s ease 0.15s both;
+}
+
+.blood-bank-home__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.blood-bank-home__stat {
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid transparent;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  animation: blood-bank-fade-up 0.45s ease both;
+}
+
+.blood-bank-home__stat:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+}
+
+.blood-bank-home__stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.blood-bank-home__stat-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.blood-bank-home__stat--success {
+  background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+  border-color: #86efac;
+  color: #065f46;
+}
+
+.blood-bank-home__stat--success .blood-bank-home__stat-label {
+  color: #047857;
+}
+
+.blood-bank-home__stat--danger {
+  background: linear-gradient(145deg, #fef2f2, #fee2e2);
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.blood-bank-home__stat--danger .blood-bank-home__stat-label {
+  color: #b91c1c;
+}
+
+.blood-bank-home__stat--primary {
+  background: linear-gradient(145deg, #fff1f2, #ffe4e6);
+  border-color: #fda4af;
+  color: #9f1239;
+}
+
+.blood-bank-home__stat--primary .blood-bank-home__stat-label {
+  color: #be123c;
+}
+
+.blood-bank-home__stat--warning {
+  background: linear-gradient(145deg, #fffbeb, #fef3c7);
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.blood-bank-home__stat--warning .blood-bank-home__stat-label {
+  color: #b45309;
+}
+
+.blood-bank-home__stat--info {
+  background: linear-gradient(145deg, #f0f9ff, #e0f2fe);
+  border-color: #7dd3fc;
+  color: #0c4a6e;
+}
+
+.blood-bank-home__stat--info .blood-bank-home__stat-label {
+  color: #0369a1;
+}
+
+.blood-bank-home__stat--purple {
+  background: linear-gradient(145deg, #faf5ff, #f3e8ff);
+  border-color: #d8b4fe;
+  color: #6b21a8;
+}
+
+.blood-bank-home__stat--purple .blood-bank-home__stat-label {
+  color: #7e22ce;
+}
+
+/* Quick link cards */
+.blood-bank-home__quick-links {
+  animation: blood-bank-fade-up 0.5s ease 0.25s both;
+}
+
+.blood-bank-home__quick-link {
+  border: 1px solid transparent;
+  color: var(--color-white);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
+}
+
+.blood-bank-home__quick-link:hover {
+  transform: translateY(-5px) scale(1.02);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+}
+
+.blood-bank-home__quick-link--inventory {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.blood-bank-home__quick-link--received {
+  background: linear-gradient(135deg, #059669, #34d399);
+}
+
+.blood-bank-home__quick-link--send {
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+}
+
+.blood-bank-home__quick-link--stock {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  color: #1f2937;
+}
+
+.blood-bank-home__quick-link--history {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+}
+
+.blood-bank-home__quick-link--stock .donor-home__card-label,
+.blood-bank-home__quick-link--stock .donor-home__card-icon {
+  color: #1f2937;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blood-bank-home__request-card,
+  .blood-bank-home__stat,
+  .blood-bank-home__stats-section,
+  .blood-bank-home__quick-links,
+  .blood-bank-home__request-icon,
+  .blood-bank-home__request-counts strong {
+    animation: none;
+  }
+
+  .blood-bank-home__request-card:hover,
+  .blood-bank-home__stat:hover,
+  .blood-bank-home__quick-link:hover {
+    transform: none;
+  }
 }

@@ -14,7 +14,6 @@ import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.dto.response.PatientResponse;
 import com.blooddonor.response.ApiResponse;
 import com.blooddonor.service.BloodBankHospitalRequestService;
-import com.blooddonor.service.BloodBankService;
 import com.blooddonor.service.BloodRequestService;
 import com.blooddonor.service.HospitalService;
 import com.blooddonor.service.PatientService;
@@ -40,19 +39,16 @@ public class HospitalController {
     private final PatientService patientService;
     private final BloodRequestService bloodRequestService;
     private final BloodBankHospitalRequestService bloodBankHospitalRequestService;
-    private final BloodBankService bloodBankService;
 
     public HospitalController(
             HospitalService hospitalService,
             PatientService patientService,
             BloodRequestService bloodRequestService,
-            BloodBankHospitalRequestService bloodBankHospitalRequestService,
-            BloodBankService bloodBankService) {
+            BloodBankHospitalRequestService bloodBankHospitalRequestService) {
         this.hospitalService = hospitalService;
         this.patientService = patientService;
         this.bloodRequestService = bloodRequestService;
         this.bloodBankHospitalRequestService = bloodBankHospitalRequestService;
-        this.bloodBankService = bloodBankService;
     }
 
     @GetMapping("/me")
@@ -122,9 +118,9 @@ public class HospitalController {
         return ResponseEntity.ok(ApiResponse.success("Assigned donor fetched successfully", response));
     }
 
-    @GetMapping("/blood-banks")
+    @GetMapping("/bloodbanks")
     public ResponseEntity<ApiResponse<List<BloodBankSummaryResponse>>> listBloodBanks() {
-        List<BloodBankSummaryResponse> response = bloodBankService.listBloodBanksForHospital();
+        List<BloodBankSummaryResponse> response = hospitalService.listAvailableBloodBanks();
         return ResponseEntity.ok(ApiResponse.success("Blood banks fetched successfully", response));
     }
 

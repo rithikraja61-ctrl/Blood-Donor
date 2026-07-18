@@ -53,12 +53,6 @@ function HospitalHomePage() {
                 {dashboard.totalPatientsSuccessfullyReceivedBlood}
               </strong>
             </article>
-            <article className="donor-dashboard__stat donor-dashboard__stat--highlight">
-              <span className="donor-dashboard__stat-label">Active donors (accepted)</span>
-              <strong className="donor-dashboard__stat-value">
-                {dashboard.totalActiveDonorsWhoAcceptedRequests}
-              </strong>
-            </article>
           </div>
         </section>
       )}

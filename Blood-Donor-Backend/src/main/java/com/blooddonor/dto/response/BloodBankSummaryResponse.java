@@ -8,7 +8,7 @@ import lombok.Getter;
 public class BloodBankSummaryResponse {
 
     private Long id;
-    private String name;
+    private String bloodBankName;
     private String city;
     private String pinCode;
 }

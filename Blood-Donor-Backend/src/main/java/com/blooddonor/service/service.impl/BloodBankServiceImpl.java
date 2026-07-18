@@ -65,7 +65,7 @@ public class BloodBankServiceImpl implements BloodBankService {
                 .sorted(Comparator.comparing(BloodBank::getName, String.CASE_INSENSITIVE_ORDER))
                 .map(bloodBank -> BloodBankSummaryResponse.builder()
                         .id(bloodBank.getId())
-                        .name(bloodBank.getName())
+                        .bloodBankName(bloodBank.getName())
                         .city(bloodBank.getCity())
                         .pinCode(bloodBank.getPincode())
                         .build())
