@@ -127,10 +127,6 @@ function BloodBankHomePage() {
           <span className="donor-home__card-icon" aria-hidden="true">📤</span>
           <span className="donor-home__card-label">Send request</span>
         </Link>
-        <Link to={ROUTES.BLOOD_BANK_HOSPITAL_REQUESTS} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--stock">
-          <span className="donor-home__card-icon" aria-hidden="true">🏥</span>
-          <span className="donor-home__card-label">Stock requests</span>
-        </Link>
         <Link to={ROUTES.BLOOD_BANK_ISSUE_HISTORY} className="donor-home__card blood-bank-home__quick-link blood-bank-home__quick-link--history">
           <span className="donor-home__card-icon" aria-hidden="true">📋</span>
           <span className="donor-home__card-label">Issue history</span>

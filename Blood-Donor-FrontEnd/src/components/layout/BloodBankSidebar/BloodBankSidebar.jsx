@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { label: 'Inventory', to: ROUTES.BLOOD_BANK_INVENTORY },
   { label: 'Received Requests', to: ROUTES.BLOOD_BANK_RECEIVED_REQUESTS },
   { label: 'Send Request', to: ROUTES.BLOOD_BANK_SEND_REQUEST },
-  { label: 'Stock Requests', to: ROUTES.BLOOD_BANK_HOSPITAL_REQUESTS },
   { label: 'Issue History', to: ROUTES.BLOOD_BANK_ISSUE_HISTORY },
   { label: 'Profile', to: ROUTES.BLOOD_BANK_PROFILE },
 ];
