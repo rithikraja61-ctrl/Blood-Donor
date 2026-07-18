@@ -112,7 +112,7 @@ function FindDonorPage() {
       {!hasSearched && !searchLoading && (
         <p className="find-donor-page__hint">
           Set PIN and blood group, then click Search donors. Update your{' '}
-          <Link to={ROUTES.PROFILE}>profile</Link> if defaults are empty.
+          <Link to={ROUTES.PROFILE}>profile</Link> to set your location and PIN code.
         </p>
       )}
 

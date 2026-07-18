@@ -1,6 +1,7 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.response.CursorDonorSearchResponse;
 import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
@@ -12,10 +13,14 @@ import com.blooddonor.mapper.DonorMapper;
 import com.blooddonor.repository.BloodRequestRepository;
 import com.blooddonor.repository.DonorRepository;
 import com.blooddonor.service.DonorService;
+import com.blooddonor.service.AccountLocationService;
 import com.blooddonor.util.DonorSearchCursorUtil;
 import com.blooddonor.util.EligibleDonorFinder;
+import com.blooddonor.util.GeoCoordinates;
 import com.blooddonor.util.PincodeProximityUtil;
+import com.blooddonor.util.RankedDonor;
 import com.blooddonor.util.SecurityUtil;
+import com.blooddonor.config.GoogleMapsProperties;
 import com.blooddonor.validation.BloodRequestStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +36,8 @@ public class DonorServiceImpl implements DonorService {
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
     private final EligibleDonorFinder eligibleDonorFinder;
+    private final AccountLocationService accountLocationService;
+    private final GoogleMapsProperties googleMapsProperties;
 
     public DonorServiceImpl(
             DonorRepository donorRepository,
@@ -38,13 +45,17 @@ public class DonorServiceImpl implements DonorService {
             DonorMapper donorMapper,
             SecurityUtil securityUtil,
             PasswordEncoder passwordEncoder,
-            EligibleDonorFinder eligibleDonorFinder) {
+            EligibleDonorFinder eligibleDonorFinder,
+            AccountLocationService accountLocationService,
+            GoogleMapsProperties googleMapsProperties) {
         this.donorRepository = donorRepository;
         this.bloodRequestRepository = bloodRequestRepository;
         this.donorMapper = donorMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
         this.eligibleDonorFinder = eligibleDonorFinder;
+        this.accountLocationService = accountLocationService;
+        this.googleMapsProperties = googleMapsProperties;
     }
 
     @Override
@@ -78,12 +89,29 @@ public class DonorServiceImpl implements DonorService {
         Donor donor = findCurrentDonor();
         donorMapper.updateEntity(donor, request);
 
+        accountLocationService.applyLocation(
+                donor,
+                request.getLatitude(),
+                request.getLongitude(),
+                donor.getAddress(),
+                donor.getCity(),
+                null,
+                donor.getPincode());
+
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             donor.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
         Donor updatedDonor = donorRepository.save(donor);
         return donorMapper.toResponse(updatedDonor);
+    }
+
+    @Override
+    public DonorResponse updateLiveLocation(LiveLocationRequest request) {
+        Donor donor = findCurrentDonor();
+        donor.setLatitude(request.getLatitude());
+        donor.setLongitude(request.getLongitude());
+        return donorMapper.toResponse(donorRepository.save(donor));
     }
 
     @Override
@@ -96,20 +124,53 @@ public class DonorServiceImpl implements DonorService {
     public CursorDonorSearchResponse searchDonors(
             String bloodGroup,
             String pinCode,
+            Double latitude,
+            Double longitude,
+            Double radiusKm,
             int limit,
             String nextCursor,
             String previousCursor) {
-        List<Donor> sortedDonors = findSortedEligibleDonors(bloodGroup, pinCode);
-        return paginateWithCursor(sortedDonors, pinCode, limit, nextCursor, previousCursor);
+        SearchContext searchContext = resolveSearchContext(bloodGroup, pinCode, latitude, longitude, radiusKm);
+        return paginateWithCursor(
+                searchContext.rankedDonors(),
+                searchContext.searchPin(),
+                searchContext.coordinateSearch(),
+                limit,
+                nextCursor,
+                previousCursor);
     }
 
-    private List<Donor> findSortedEligibleDonors(String bloodGroup, String pinCode) {
-        return eligibleDonorFinder.findSortedEligibleDonors(bloodGroup, pinCode);
+    private SearchContext resolveSearchContext(
+            String bloodGroup,
+            String pinCode,
+            Double latitude,
+            Double longitude,
+            Double radiusKm) {
+        if ((latitude == null || longitude == null) && (pinCode == null || pinCode.isBlank())) {
+            throw new BadRequestException("Provide either latitude/longitude or a PIN code for donor search");
+        }
+
+        GeoCoordinates origin = accountLocationService.resolveSearchOrigin(
+                latitude, longitude, pinCode, null, null, null);
+        double radius = radiusKm != null ? radiusKm : googleMapsProperties.getDefaultSearchRadiusKm();
+        boolean coordinateSearch = origin != null && origin.isValid();
+
+        List<RankedDonor> rankedDonors = eligibleDonorFinder.findRankedEligibleDonors(
+                bloodGroup,
+                coordinateSearch ? origin : null,
+                pinCode,
+                coordinateSearch ? radius : Double.MAX_VALUE);
+
+        return new SearchContext(
+                rankedDonors,
+                pinCode != null ? pinCode : "",
+                coordinateSearch);
     }
 
     private CursorDonorSearchResponse paginateWithCursor(
-            List<Donor> sortedDonors,
+            List<RankedDonor> sortedDonors,
             String searchPin,
+            boolean coordinateSearch,
             int limit,
             String nextCursor,
             String previousCursor) {
@@ -137,22 +198,22 @@ public class DonorServiceImpl implements DonorService {
             endIndex = Math.min(limit, total);
         }
 
-        List<Donor> pageDonors = (startIndex >= total || startIndex >= endIndex)
+        List<RankedDonor> pageDonors = (startIndex >= total || startIndex >= endIndex)
                 ? List.of()
                 : sortedDonors.subList(startIndex, endIndex);
 
         List<DonorSearchResponse> content = pageDonors.stream()
-                .map(donor -> toSearchResponse(donor, searchPin))
+                .map(ranked -> toSearchResponse(ranked, searchPin, coordinateSearch))
                 .toList();
 
         boolean hasNext = endIndex < total;
         boolean hasPrevious = startIndex > 0;
 
         String responseNextCursor = hasNext && !pageDonors.isEmpty()
-                ? DonorSearchCursorUtil.encode(pageDonors.get(pageDonors.size() - 1).getId())
+                ? DonorSearchCursorUtil.encode(pageDonors.get(pageDonors.size() - 1).donor().getId())
                 : null;
         String responsePreviousCursor = hasPrevious && !pageDonors.isEmpty()
-                ? DonorSearchCursorUtil.encode(pageDonors.get(0).getId())
+                ? DonorSearchCursorUtil.encode(pageDonors.get(0).donor().getId())
                 : null;
 
         return CursorDonorSearchResponse.builder()
@@ -162,27 +223,39 @@ public class DonorServiceImpl implements DonorService {
                 .build();
     }
 
-    private int indexOfDonor(List<Donor> donors, Long donorId) {
+    private int indexOfDonor(List<RankedDonor> donors, Long donorId) {
         for (int i = 0; i < donors.size(); i++) {
-            if (donors.get(i).getId().equals(donorId)) {
+            if (donors.get(i).donor().getId().equals(donorId)) {
                 return i;
             }
         }
         throw new BadRequestException("Invalid or expired cursor");
     }
 
-    private DonorSearchResponse toSearchResponse(Donor donor, String searchPin) {
-        return DonorSearchResponse.builder()
+    private DonorSearchResponse toSearchResponse(RankedDonor ranked, String searchPin, boolean coordinateSearch) {
+        Donor donor = ranked.donor();
+        DonorSearchResponse.DonorSearchResponseBuilder builder = DonorSearchResponse.builder()
                 .id(donor.getId())
                 .name(donor.getName())
                 .bloodGroup(donor.getBloodType().getDisplayName())
                 .city(donor.getCity())
                 .pinCode(donor.getPincode())
-                .distancePriority(PincodeProximityUtil.getDistancePriority(searchPin, donor.getPincode()))
+                .latitude(donor.getLatitude())
+                .longitude(donor.getLongitude())
                 .phoneNumber(donor.getPhoneNumber())
                 .lastDonationDate(donor.getLastDonationDate())
-                .availabilityStatus(donor.isAvailable())
-                .build();
+                .availabilityStatus(donor.isAvailable());
+
+        if (coordinateSearch) {
+            builder.distanceKm(Math.round(ranked.distanceKm() * 10.0) / 10.0);
+        } else if (searchPin != null && !searchPin.isBlank()) {
+            builder.distancePriority(PincodeProximityUtil.getDistancePriority(searchPin, donor.getPincode()));
+        }
+
+        return builder.build();
+    }
+
+    private record SearchContext(List<RankedDonor> rankedDonors, String searchPin, boolean coordinateSearch) {
     }
 
     private Donor findCurrentDonor() {

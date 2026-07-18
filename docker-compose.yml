@@ -38,6 +38,7 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: root
       JWT_SECRET: change-this-to-a-256-bit-secret-key-in-production-docker
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
       MAIL_ENABLED: ${MAIL_ENABLED:-true}
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}

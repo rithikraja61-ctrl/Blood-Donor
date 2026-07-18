@@ -91,6 +91,9 @@ public class BloodRequest {
     @Column(nullable = false, length = 6)
     private String hospitalPinCode;
 
+    private Double requestLatitude;
+    private Double requestLongitude;
+
     @Column(nullable = false)
     private String contactPersonName;
 

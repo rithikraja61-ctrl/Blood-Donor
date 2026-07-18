@@ -21,4 +21,6 @@ public class HospitalResponse {
     private String profileImageUrl;
     private LocalDateTime registrationDate;
     private LocalDateTime updatedAt;
+    private Double latitude;
+    private Double longitude;
 }

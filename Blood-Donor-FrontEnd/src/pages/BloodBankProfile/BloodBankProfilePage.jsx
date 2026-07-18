@@ -6,6 +6,8 @@ import {
   updateBloodBankProfile,
 } from '../../services/bloodBankService';
 import { ApiError } from '../../services/apiClient';
+import LocationSelector from '../../components/map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import { useAuth } from '../../context/AuthContext';
 import '../DonorProfile/DonorProfilePage.css';
 import './BloodBankProfilePage.css';
@@ -21,6 +23,8 @@ function mapProfileToForm(data, fallbackName = '') {
     pincode: data?.pinCode || data?.pincode || '',
     licenseNumber: data?.licenseNumber || '',
     profileImageUrl: data?.profileImage || data?.profileImageUrl || '',
+    latitude: data?.latitude ?? null,
+    longitude: data?.longitude ?? null,
   };
 }
 
@@ -30,6 +34,7 @@ function BloodBankProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     getBloodBankProfile()
@@ -44,6 +49,11 @@ function BloodBankProfilePage() {
       });
   }, [user?.name]);
 
+  const handleLocationChange = (loc) => {
+    setForm((prev) => applyLocationToFormFields(prev, loc, 'Blood Bank'));
+    setLocationError('');
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -52,9 +62,14 @@ function BloodBankProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your blood bank location on the map.');
+      return;
+    }
     setSaving(true);
     setError('');
     setSuccess('');
+    setLocationError('');
     try {
       const updated = await updateBloodBankProfile({
         name: form.name,
@@ -66,6 +81,8 @@ function BloodBankProfilePage() {
         pincode: form.pincode,
         licenseNumber: form.licenseNumber,
         profileImageUrl: form.profileImageUrl || undefined,
+        latitude: form.latitude,
+        longitude: form.longitude,
       });
       syncProfile({
         ...updated,
@@ -102,6 +119,12 @@ function BloodBankProfilePage() {
         <CommonInput id="name" label="Blood bank name" name="name" value={form.name} onChange={handleChange} />
         <CommonInput id="email" label="Email" name="email" type="email" value={form.email} onChange={handleChange} />
         <CommonInput id="phoneNumber" label="Phone" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} />
+        <LocationSelector
+          location={locationFromFormFields(form)}
+          onLocationChange={handleLocationChange}
+          error={locationError}
+          title="Blood bank location"
+        />
         <CommonInput id="address" label="Address" name="address" value={form.address} onChange={handleChange} />
         <CommonInput id="city" label="City" name="city" value={form.city} onChange={handleChange} />
         <CommonInput id="state" label="State" name="state" value={form.state} onChange={handleChange} />

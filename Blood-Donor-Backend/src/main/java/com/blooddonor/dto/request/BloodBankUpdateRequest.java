@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BloodBankUpdateRequest {
+public class BloodBankUpdateRequest extends LocationRequest {
 
     private String name;
 

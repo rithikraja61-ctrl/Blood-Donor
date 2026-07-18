@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class UserSendBloodRequestDto {
+public class UserSendBloodRequestDto extends LocationRequest {
 
     @NotBlank(message = "Contact person name is required")
     private String contactPersonName;

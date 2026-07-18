@@ -48,6 +48,28 @@
   color: var(--landing-text);
 }
 
+.donor-request-card__distance {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-blood-red);
+  margin: 0.35rem 0;
+}
+
+.request-location-map {
+  margin-top: 0.75rem;
+}
+
+.request-location-map__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+.request-location-map__fallback {
+  font-size: 0.85rem;
+  color: var(--landing-text-muted);
+}
+
 .donor-request-card__actions {
   display: flex;
   gap: 0.75rem;

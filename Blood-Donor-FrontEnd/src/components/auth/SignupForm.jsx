@@ -7,6 +7,8 @@ import { getPostLoginRoute } from '../../utils/roleRoutes';
 import RoleSelector from './RoleSelector';
 import CommonInput from './CommonInput';
 import PasswordInput from './PasswordInput';
+import LocationSelector from '../map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[0-9]{10,15}$/;
@@ -51,6 +53,8 @@ const INITIAL_FORM = {
   licenseNumber: '',
   password: '',
   confirmPassword: '',
+  latitude: null,
+  longitude: null,
 };
 
 function SignupForm() {
@@ -82,6 +86,58 @@ function SignupForm() {
     setActiveRole(role);
     setErrors({});
     setSubmitError('');
+    setFormData((prev) => ({ ...prev, latitude: null, longitude: null }));
+  };
+
+  const handleLocationChange = (loc) => {
+    setFormData((prev) => applyLocationToFormFields(prev, loc, activeRole));
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (loc.latitude != null && loc.longitude != null) delete next.location;
+      if (loc.pincode) delete next.pincode;
+      if (loc.address || loc.formattedAddress) {
+        if (activeRole === 'Hospital') delete next.hospitalAddress;
+        else if (activeRole === 'Blood Bank') delete next.bloodBankAddress;
+        else delete next.address;
+      }
+      if (loc.city && activeRole === 'Donor') delete next.city;
+      if (loc.city && activeRole === 'Hospital') delete next.hospitalCity;
+      if (loc.city && activeRole === 'Blood Bank') delete next.bloodBankCity;
+      if (loc.state && activeRole === 'Hospital') delete next.hospitalState;
+      if (loc.state && activeRole === 'Blood Bank') delete next.bloodBankState;
+      return next;
+    });
+    setSubmitError('');
+  };
+
+  const getSignupLocation = () => {
+    if (activeRole === 'Hospital') {
+      return locationFromFormFields({
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        address: formData.hospitalAddress,
+        city: formData.hospitalCity,
+        state: formData.hospitalState,
+        pincode: formData.pincode,
+      });
+    }
+    if (activeRole === 'Blood Bank') {
+      return locationFromFormFields({
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        address: formData.bloodBankAddress,
+        city: formData.bloodBankCity,
+        state: formData.bloodBankState,
+        pincode: formData.pincode,
+      });
+    }
+    return locationFromFormFields({
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      address: formData.address,
+      city: formData.city,
+      pincode: formData.pincode,
+    });
   };
 
   const validatePasswordFields = (d, e) => {
@@ -137,6 +193,10 @@ function SignupForm() {
 
     validatePincode(d, e);
     validatePasswordFields(d, e);
+
+    if (d.latitude == null || d.longitude == null) {
+      e.location = 'Please select your location on the map';
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -203,6 +263,12 @@ function SignupForm() {
               error={errors.phone}
               placeholder="Enter phone number"
             />
+            <LocationSelector
+              location={getSignupLocation()}
+              onLocationChange={handleLocationChange}
+              error={errors.location}
+              title="Your location"
+            />
             <CommonInput
               id="address"
               label="Address"
@@ -210,7 +276,7 @@ function SignupForm() {
               value={formData.address}
               onChange={handleChange}
               error={errors.address}
-              placeholder="Enter your address"
+              placeholder="Auto-filled from location or enter manually"
             />
             {activeRole === 'Donor' && (
               <CommonInput
@@ -220,9 +286,19 @@ function SignupForm() {
                 value={formData.city}
                 onChange={handleChange}
                 error={errors.city}
-                placeholder="Enter your city"
+                placeholder="Auto-filled from location or enter manually"
               />
             )}
+            <CommonInput
+              id="pincode"
+              label="Pincode"
+              name="pincode"
+              type="tel"
+              value={formData.pincode}
+              onChange={handleChange}
+              error={errors.pincode}
+              placeholder="Auto-filled from location or enter manually"
+            />
             <CommonInput
               id="bloodGroup"
               label="Blood Group"
@@ -267,6 +343,12 @@ function SignupForm() {
               error={errors.hospitalPhone}
               placeholder="Enter hospital phone number"
             />
+            <LocationSelector
+              location={getSignupLocation()}
+              onLocationChange={handleLocationChange}
+              error={errors.location}
+              title="Hospital location"
+            />
             <CommonInput
               id="hospitalAddress"
               label="Hospital Address"
@@ -274,7 +356,7 @@ function SignupForm() {
               value={formData.hospitalAddress}
               onChange={handleChange}
               error={errors.hospitalAddress}
-              placeholder="Enter hospital address"
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="hospitalCity"
@@ -283,7 +365,7 @@ function SignupForm() {
               value={formData.hospitalCity}
               onChange={handleChange}
               error={errors.hospitalCity}
-              placeholder="Enter city"
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="hospitalState"
@@ -292,7 +374,17 @@ function SignupForm() {
               value={formData.hospitalState}
               onChange={handleChange}
               error={errors.hospitalState}
-              placeholder="Enter state"
+              placeholder="Auto-filled from location or enter manually"
+            />
+            <CommonInput
+              id="pincode"
+              label="Pincode"
+              name="pincode"
+              type="tel"
+              value={formData.pincode}
+              onChange={handleChange}
+              error={errors.pincode}
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="hospitalLicenseNumber"
@@ -337,6 +429,12 @@ function SignupForm() {
               error={errors.bloodBankPhone}
               placeholder="Enter blood bank phone number"
             />
+            <LocationSelector
+              location={getSignupLocation()}
+              onLocationChange={handleLocationChange}
+              error={errors.location}
+              title="Blood bank location"
+            />
             <CommonInput
               id="bloodBankAddress"
               label="Blood Bank Address"
@@ -344,7 +442,7 @@ function SignupForm() {
               value={formData.bloodBankAddress}
               onChange={handleChange}
               error={errors.bloodBankAddress}
-              placeholder="Enter blood bank address"
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="bloodBankCity"
@@ -353,7 +451,7 @@ function SignupForm() {
               value={formData.bloodBankCity}
               onChange={handleChange}
               error={errors.bloodBankCity}
-              placeholder="Enter city"
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="bloodBankState"
@@ -362,7 +460,17 @@ function SignupForm() {
               value={formData.bloodBankState}
               onChange={handleChange}
               error={errors.bloodBankState}
-              placeholder="Enter state"
+              placeholder="Auto-filled from location or enter manually"
+            />
+            <CommonInput
+              id="pincode"
+              label="Pincode"
+              name="pincode"
+              type="tel"
+              value={formData.pincode}
+              onChange={handleChange}
+              error={errors.pincode}
+              placeholder="Auto-filled from location or enter manually"
             />
             <CommonInput
               id="bloodBankLicenseNumber"
@@ -376,17 +484,6 @@ function SignupForm() {
           </>
         )}
       </div>
-
-      <CommonInput
-        id="pincode"
-        label="Pincode"
-        name="pincode"
-        type="tel"
-        value={formData.pincode}
-        onChange={handleChange}
-        error={errors.pincode}
-        placeholder="Enter your pincode"
-      />
 
       <PasswordInput
         id="password"

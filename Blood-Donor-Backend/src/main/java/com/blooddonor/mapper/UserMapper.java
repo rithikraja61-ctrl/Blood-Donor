@@ -36,6 +36,8 @@ public class UserMapper {
                 .bloodType(user.getBloodType())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .latitude(user.getLatitude())
+                .longitude(user.getLongitude())
                 .build();
     }
 
@@ -45,5 +47,7 @@ public class UserMapper {
         Optional.ofNullable(request.getAddress()).ifPresent(user::setAddress);
         Optional.ofNullable(request.getPincode()).ifPresent(user::setPincode);
         Optional.ofNullable(request.getBloodType()).ifPresent(user::setBloodType);
+        Optional.ofNullable(request.getLatitude()).ifPresent(user::setLatitude);
+        Optional.ofNullable(request.getLongitude()).ifPresent(user::setLongitude);
     }
 }

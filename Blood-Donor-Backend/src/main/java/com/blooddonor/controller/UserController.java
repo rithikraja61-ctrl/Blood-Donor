@@ -1,5 +1,6 @@
 package com.blooddonor.controller;
 
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.request.UserUpdateRequest;
 import com.blooddonor.dto.response.BloodRequestResponse;
@@ -44,6 +45,13 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequest request) {
         UserResponse response = userService.updateProfile(request);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
+    }
+
+    @PutMapping("/me/live-location")
+    public ResponseEntity<ApiResponse<UserResponse>> updateLiveLocation(
+            @Valid @RequestBody LiveLocationRequest request) {
+        UserResponse response = userService.updateLiveLocation(request);
+        return ResponseEntity.ok(ApiResponse.success("Live location updated", response));
     }
 
     @DeleteMapping("/me")

@@ -31,10 +31,13 @@ export async function listDonorIncomingRequests() {
   return res.data;
 }
 
-export async function acceptDonorBloodRequest(requestId) {
-  const res = await apiRequest(`/donors/blood-requests/${requestId}/accept`, {
-    method: 'POST',
-  });
+export async function acceptDonorBloodRequest(requestId, location) {
+  const options = { method: 'POST' };
+  if (location?.latitude != null && location?.longitude != null) {
+    options.body = JSON.stringify(location);
+    options.headers = { 'Content-Type': 'application/json' };
+  }
+  const res = await apiRequest(`/donors/blood-requests/${requestId}/accept`, options);
   return res.data;
 }
 

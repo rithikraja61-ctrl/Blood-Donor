@@ -24,6 +24,11 @@ jwt:
   secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-key-in-production}
   expiration-ms: 86400000
 
+google:
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY:}
+    default-search-radius-km: 25
+
 spring.mail:
   host: ${MAIL_HOST:smtp.gmail.com}
   port: ${MAIL_PORT:587}

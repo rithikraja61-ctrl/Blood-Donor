@@ -1,6 +1,8 @@
 package com.blooddonor.controller;
 
 import com.blooddonor.dto.request.DonorUpdateRequest;
+import com.blooddonor.dto.request.LiveLocationRequest;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.DonorDashboardResponse;
 import com.blooddonor.dto.response.DonorResponse;
@@ -51,6 +53,13 @@ public class DonorController {
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
     }
 
+    @PutMapping("/me/live-location")
+    public ResponseEntity<ApiResponse<DonorResponse>> updateLiveLocation(
+            @Valid @RequestBody LiveLocationRequest request) {
+        DonorResponse response = donorService.updateLiveLocation(request);
+        return ResponseEntity.ok(ApiResponse.success("Live location updated", response));
+    }
+
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteAccount() {
         donorService.deleteAccount();
@@ -65,8 +74,9 @@ public class DonorController {
 
     @PostMapping("/blood-requests/{requestId}/accept")
     public ResponseEntity<ApiResponse<BloodRequestResponse>> acceptBloodRequest(
-            @PathVariable Long requestId) {
-        BloodRequestResponse response = bloodRequestService.acceptRequest(requestId);
+            @PathVariable Long requestId,
+            @RequestBody(required = false) @Valid LiveLocationRequest location) {
+        BloodRequestResponse response = bloodRequestService.acceptRequest(requestId, location);
         return ResponseEntity.ok(ApiResponse.success("Blood request accepted successfully", response));
     }
 

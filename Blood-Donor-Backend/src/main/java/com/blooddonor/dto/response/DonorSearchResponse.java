@@ -14,6 +14,9 @@ public class DonorSearchResponse {
     private String city;
     private String pinCode;
     private DistancePriority distancePriority;
+    private Double distanceKm;
+    private Double latitude;
+    private Double longitude;
     private String phoneNumber;
     private LocalDate lastDonationDate;
     private boolean availabilityStatus;

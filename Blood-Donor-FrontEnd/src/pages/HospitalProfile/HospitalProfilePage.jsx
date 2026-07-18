@@ -6,6 +6,8 @@ import {
   updateHospitalProfile,
 } from '../../services/hospitalService';
 import { ApiError } from '../../services/apiClient';
+import LocationSelector from '../../components/map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import '../DonorProfile/DonorProfilePage.css';
 
 const EMPTY = {
@@ -16,6 +18,8 @@ const EMPTY = {
   state: '',
   pincode: '',
   licenseNumber: '',
+  latitude: null,
+  longitude: null,
 };
 
 function HospitalProfilePage() {
@@ -24,6 +28,7 @@ function HospitalProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     getHospitalProfile()
@@ -37,12 +42,19 @@ function HospitalProfilePage() {
           state: data.state || '',
           pincode: data.pincode || '',
           licenseNumber: data.licenseNumber || '',
+          latitude: data.latitude ?? null,
+          longitude: data.longitude ?? null,
         });
       })
       .catch((err) => {
         setError(err instanceof ApiError ? err.message : 'Failed to load profile.');
       });
   }, []);
+
+  const handleLocationChange = (loc) => {
+    setForm((prev) => applyLocationToFormFields(prev, loc, 'Hospital'));
+    setLocationError('');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,9 +64,14 @@ function HospitalProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your hospital location on the map.');
+      return;
+    }
     setSaving(true);
     setError('');
     setSuccess('');
+    setLocationError('');
     try {
       const updated = await updateHospitalProfile(form);
       setProfile(updated);
@@ -85,6 +102,12 @@ function HospitalProfilePage() {
       <form className="donor-profile-page__card" onSubmit={handleSubmit}>
         <CommonInput id="name" label="Hospital name" name="name" value={form.name} onChange={handleChange} />
         <CommonInput id="phoneNumber" label="Phone" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} />
+        <LocationSelector
+          location={locationFromFormFields(form)}
+          onLocationChange={handleLocationChange}
+          error={locationError}
+          title="Hospital location"
+        />
         <CommonInput id="address" label="Address" name="address" value={form.address} onChange={handleChange} />
         <CommonInput id="city" label="City" name="city" value={form.city} onChange={handleChange} />
         <CommonInput id="state" label="State" name="state" value={form.state} onChange={handleChange} />

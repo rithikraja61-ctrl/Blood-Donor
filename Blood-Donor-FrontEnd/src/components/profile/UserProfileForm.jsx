@@ -5,6 +5,8 @@ import {
   TYPE_TO_BLOOD_GROUP,
 } from '../../utils/constants';
 import { ApiError } from '../../services/apiClient';
+import LocationSelector from '../map/LocationSelector';
+import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import './ProfileForm.css';
 
 const PHONE_REGEX = /^[0-9]{10,15}$/;
@@ -18,7 +20,10 @@ function UserProfileForm({ profile, onSave, onCancel }) {
     pincode: '',
     bloodGroup: '',
     password: '',
+    latitude: null,
+    longitude: null,
   });
+  const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -34,6 +39,8 @@ function UserProfileForm({ profile, onSave, onCancel }) {
           ? TYPE_TO_BLOOD_GROUP[profile.bloodType] || profile.bloodType
           : '',
         password: '',
+        latitude: profile.latitude ?? null,
+        longitude: profile.longitude ?? null,
       });
     }
   }, [profile]);
@@ -51,6 +58,11 @@ function UserProfileForm({ profile, onSave, onCancel }) {
     setForm((prev) => ({ ...prev, [name]: next }));
     setError('');
     setSuccess('');
+  };
+
+  const handleLocationChange = (loc) => {
+    setForm((prev) => applyLocationToFormFields(prev, loc));
+    setLocationError('');
   };
 
   const handleSubmit = async (e) => {
@@ -88,12 +100,19 @@ function UserProfileForm({ profile, onSave, onCancel }) {
       return;
     }
 
+    if (form.latitude == null || form.longitude == null) {
+      setLocationError('Please select your location.');
+      return;
+    }
+
     const payload = {
       name: form.name.trim(),
       phoneNumber: form.phoneNumber,
       address: form.address.trim(),
       pincode: form.pincode,
       bloodType: BLOOD_GROUP_TO_TYPE[form.bloodGroup],
+      latitude: form.latitude,
+      longitude: form.longitude,
     };
 
     if (form.password.trim()) {
@@ -126,6 +145,13 @@ function UserProfileForm({ profile, onSave, onCancel }) {
         Phone number
         <input type="tel" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} required />
       </label>
+
+      <LocationSelector
+        location={locationFromFormFields(form)}
+        onLocationChange={handleLocationChange}
+        error={locationError}
+        title="Your location"
+      />
 
       <label className="profile-form__field">
         Address

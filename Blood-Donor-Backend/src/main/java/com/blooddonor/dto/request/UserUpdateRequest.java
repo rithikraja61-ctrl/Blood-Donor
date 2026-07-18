@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Pattern;
 
 @Getter
 @Setter
-public class UserUpdateRequest {
+public class UserUpdateRequest extends LocationRequest {
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")
     private String pincode;
     private String name;

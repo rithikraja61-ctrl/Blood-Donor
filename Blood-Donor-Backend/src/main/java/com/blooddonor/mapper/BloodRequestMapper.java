@@ -2,12 +2,20 @@ package com.blooddonor.mapper;
 
 import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.entity.BloodRequest;
+import com.blooddonor.entity.Donor;
+import com.blooddonor.util.GeoDistanceUtil;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BloodRequestMapper {
 
     public BloodRequestResponse toResponse(BloodRequest request) {
+        return toResponse(request, null);
+    }
+
+    public BloodRequestResponse toResponse(BloodRequest request, Donor viewerDonor) {
+        Double distanceKm = computeDistanceKm(request, viewerDonor);
+
         return BloodRequestResponse.builder()
                 .id(request.getId())
                 .requestGroupId(request.getRequestGroupId())
@@ -40,6 +48,29 @@ public class BloodRequestMapper {
                 .completedAt(request.getCompletedAt())
                 .requestSentDateTime(request.getCreatedAt())
                 .responseDateTime(request.getRespondedAt())
+                .requestLatitude(request.getRequestLatitude())
+                .requestLongitude(request.getRequestLongitude())
+                .distanceKm(distanceKm)
                 .build();
+    }
+
+    private Double computeDistanceKm(BloodRequest request, Donor viewerDonor) {
+        if (viewerDonor == null
+                || request.getRequestLatitude() == null
+                || request.getRequestLongitude() == null
+                || viewerDonor.getLatitude() == null
+                || viewerDonor.getLongitude() == null) {
+            return null;
+        }
+
+        return roundDistance(GeoDistanceUtil.haversineKm(
+                viewerDonor.getLatitude(),
+                viewerDonor.getLongitude(),
+                request.getRequestLatitude(),
+                request.getRequestLongitude()));
+    }
+
+    private double roundDistance(double distanceKm) {
+        return Math.round(distanceKm * 10.0) / 10.0;
     }
 }

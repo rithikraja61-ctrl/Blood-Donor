@@ -7,6 +7,7 @@ import {
   listSentBloodBankBloodRequests,
   sendBloodBankBloodRequest,
 } from '../../services/bloodBankService';
+import GpsCaptureButton from '../../components/map/GpsCaptureButton';
 import { ApiError } from '../../services/apiClient';
 import {
   BLOOD_GROUPS,
@@ -37,6 +38,7 @@ function BloodBankSendRequestPage() {
   const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(null);
+  const [liveLocation, setLiveLocation] = useState(null);
 
   const loadSent = useCallback(async () => {
     setListLoading(true);
@@ -101,6 +103,10 @@ function BloodBankSendRequestPage() {
       setError('Set a valid 6-digit pincode in your profile before sending a request.');
       return;
     }
+    if (!liveLocation?.latitude || !liveLocation?.longitude) {
+      setError('Please capture your blood bank live GPS location before sending.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -112,6 +118,8 @@ function BloodBankSendRequestPage() {
         emergencyLevel: form.emergencyLevel,
         requiredBeforeDateTime: form.requiredBeforeDateTime,
         reasonForBloodRequirement: form.reasonForBloodRequirement.trim() || undefined,
+        latitude: liveLocation.latitude,
+        longitude: liveLocation.longitude,
       });
       setSuccess({ count: responses.length, requestGroupId: responses[0]?.requestGroupId });
       setForm((prev) => ({
@@ -132,7 +140,14 @@ function BloodBankSendRequestPage() {
     <div className="blood-request-page blood-bank-send-request">
       <PageHeader
         title="Send request"
-        subtitle="Broadcast a blood request to eligible donors near your blood bank pincode."
+        subtitle="Capture live GPS location and broadcast to eligible donors nearby."
+      />
+
+      <GpsCaptureButton
+        required
+        onCapture={setLiveLocation}
+        label="Update blood bank live location (GPS)"
+        capturedLabel="Blood bank live location ready"
       />
 
       <div className="blood-request-page__profile">

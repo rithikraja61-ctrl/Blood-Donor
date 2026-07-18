@@ -23,6 +23,11 @@ spring:
 jwt:
   secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-key-in-production-docker}
 
+google:
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY:}
+    default-search-radius-km: 25
+
 blood-donor:
   mail:
     enabled: ${MAIL_ENABLED:true}

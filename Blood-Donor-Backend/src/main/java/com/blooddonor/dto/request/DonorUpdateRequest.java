@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DonorUpdateRequest {
+public class DonorUpdateRequest extends LocationRequest {
 
     private String name;
     private String phoneNumber;

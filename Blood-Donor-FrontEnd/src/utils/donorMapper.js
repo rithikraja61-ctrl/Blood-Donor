@@ -5,6 +5,10 @@ const DISTANCE_LABELS = {
 };
 
 export function mapDonorFromApi(donor, index) {
+  const distanceLabel = donor.distanceKm != null
+    ? `${donor.distanceKm} km away`
+    : DISTANCE_LABELS[donor.distancePriority] || donor.distancePriority || '—';
+
   return {
     id: donor.id ?? `${donor.name}-${donor.pinCode}-${index}`,
     name: donor.name,
@@ -12,9 +16,12 @@ export function mapDonorFromApi(donor, index) {
     pincode: donor.pinCode,
     city: donor.city || '—',
     phone: donor.phoneNumber,
+    latitude: donor.latitude,
+    longitude: donor.longitude,
+    distanceKm: donor.distanceKm,
     availability: donor.availabilityStatus ? 'Available' : 'Unavailable',
     lastDonation: donor.lastDonationDate || '—',
-    distanceLabel: DISTANCE_LABELS[donor.distancePriority] || donor.distancePriority || '—',
+    distanceLabel,
   };
 }
 

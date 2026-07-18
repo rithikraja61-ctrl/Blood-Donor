@@ -1,6 +1,7 @@
 package com.blooddonor.service;
 
 import com.blooddonor.dto.request.BloodBankSendBloodRequestDto;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
@@ -38,7 +39,7 @@ public interface BloodRequestService {
 
     List<BloodRequestResponse> listIncomingForDonor();
 
-    BloodRequestResponse acceptRequest(Long requestId);
+    BloodRequestResponse acceptRequest(Long requestId, LiveLocationRequest location);
 
     BloodRequestResponse rejectRequest(Long requestId);
 }

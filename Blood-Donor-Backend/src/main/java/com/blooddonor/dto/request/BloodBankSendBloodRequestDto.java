@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class BloodBankSendBloodRequestDto {
+public class BloodBankSendBloodRequestDto extends LocationRequest {
 
     @NotBlank(message = "Patient or recipient name is required")
     private String patientName;

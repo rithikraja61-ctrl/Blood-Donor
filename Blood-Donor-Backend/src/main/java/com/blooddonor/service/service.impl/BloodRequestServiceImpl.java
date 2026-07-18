@@ -1,10 +1,12 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.BloodBankSendBloodRequestDto;
+import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
+import com.blooddonor.entity.BaseAccount;
 import com.blooddonor.entity.BloodBank;
 import com.blooddonor.entity.BloodRequest;
 import com.blooddonor.entity.Donor;
@@ -21,6 +23,9 @@ import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.PatientRepository;
 import com.blooddonor.repository.UserRepository;
 import com.blooddonor.service.BloodRequestService;
+import com.blooddonor.config.GoogleMapsProperties;
+import com.blooddonor.util.GeoCoordinates;
+import com.blooddonor.util.GeoDistanceUtil;
 import com.blooddonor.util.EligibleDonorFinder;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
@@ -32,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +55,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
     private final BloodRequestMapper bloodRequestMapper;
     private final SecurityUtil securityUtil;
     private final EligibleDonorFinder eligibleDonorFinder;
+    private final GoogleMapsProperties googleMapsProperties;
 
     public BloodRequestServiceImpl(
             BloodRequestRepository bloodRequestRepository,
@@ -59,7 +66,8 @@ public class BloodRequestServiceImpl implements BloodRequestService {
             BloodBankRepository bloodBankRepository,
             BloodRequestMapper bloodRequestMapper,
             SecurityUtil securityUtil,
-            EligibleDonorFinder eligibleDonorFinder) {
+            EligibleDonorFinder eligibleDonorFinder,
+            GoogleMapsProperties googleMapsProperties) {
         this.bloodRequestRepository = bloodRequestRepository;
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
@@ -69,6 +77,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         this.bloodRequestMapper = bloodRequestMapper;
         this.securityUtil = securityUtil;
         this.eligibleDonorFinder = eligibleDonorFinder;
+        this.googleMapsProperties = googleMapsProperties;
     }
 
     @Override
@@ -89,8 +98,15 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
         expirePendingRequestsForPatient(patient.getId());
 
+        syncLiveLocation(hospital, request.getLatitude(), request.getLongitude());
+
         String bloodGroup = patient.getBloodType().getDisplayName();
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, hospital.getPincode());
+        GeoCoordinates origin = resolveRequestOrigin(request.getLatitude(), request.getLongitude(), hospital);
+        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup,
+                origin,
+                hospital.getPincode(),
+                googleMapsProperties.getDefaultSearchRadiusKm());
 
         if (nearbyDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
@@ -122,8 +138,15 @@ public class BloodRequestServiceImpl implements BloodRequestService {
                 ? request.getReasonForBloodRequirement()
                 : "Blood required";
 
+        syncLiveLocation(bloodBank, request.getLatitude(), request.getLongitude());
+
         String bloodGroup = request.getBloodType().getDisplayName();
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, bloodBank.getPincode());
+        GeoCoordinates origin = resolveRequestOrigin(request.getLatitude(), request.getLongitude(), bloodBank);
+        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup,
+                origin,
+                bloodBank.getPincode(),
+                googleMapsProperties.getDefaultSearchRadiusKm());
 
         if (nearbyDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
@@ -210,6 +233,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setEmergencyLevel(request.getEmergencyLevel());
         bloodRequest.setRequiredBeforeDateTime(request.getRequiredBeforeDateTime());
         bloodRequest.setStatus(BloodRequestStatus.PENDING);
+        applyRequestCoordinates(bloodRequest, request.getLatitude(), request.getLongitude(), bloodBank);
         return bloodRequest;
     }
 
@@ -239,8 +263,15 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
         expirePendingRequestsForUser(user.getId());
 
+        syncLiveLocation(user, request.getLatitude(), request.getLongitude());
+
         String bloodGroup = user.getBloodType().getDisplayName();
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(bloodGroup, user.getPincode());
+        GeoCoordinates origin = resolveRequestOrigin(request.getLatitude(), request.getLongitude(), user);
+        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup,
+                origin,
+                user.getPincode(),
+                googleMapsProperties.getDefaultSearchRadiusKm());
 
         if (nearbyDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
@@ -345,24 +376,23 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
     @Override
     public List<BloodRequestResponse> listIncomingForDonor() {
-        Long donorId = securityUtil.getCurrentUserId();
-        return bloodRequestRepository.findByDonorIdOrderByCreatedAtDesc(donorId).stream()
-                .sorted((a, b) -> {
-                    if (a.getStatus() == BloodRequestStatus.PENDING && b.getStatus() != BloodRequestStatus.PENDING) {
-                        return -1;
-                    }
-                    if (a.getStatus() != BloodRequestStatus.PENDING && b.getStatus() == BloodRequestStatus.PENDING) {
-                        return 1;
-                    }
-                    return b.getCreatedAt().compareTo(a.getCreatedAt());
-                })
-                .map(bloodRequestMapper::toResponse)
+        Donor donor = findCurrentDonor();
+        return bloodRequestRepository.findByDonorIdOrderByCreatedAtDesc(donor.getId()).stream()
+                .sorted(incomingRequestComparator(donor))
+                .map(request -> bloodRequestMapper.toResponse(request, donor))
                 .toList();
     }
 
     @Override
     @Transactional
-    public BloodRequestResponse acceptRequest(Long requestId) {
+    public BloodRequestResponse acceptRequest(Long requestId, LiveLocationRequest location) {
+        if (location != null && location.getLatitude() != null && location.getLongitude() != null) {
+            Donor donor = findCurrentDonor();
+            donor.setLatitude(location.getLatitude());
+            donor.setLongitude(location.getLongitude());
+            donorRepository.save(donor);
+        }
+
         BloodRequest request = findPendingRequestForDonor(requestId);
         return acceptPendingBloodRequest(request);
     }
@@ -418,6 +448,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setEmergencyLevel(request.getEmergencyLevel());
         bloodRequest.setRequiredBeforeDateTime(request.getRequiredBeforeDateTime());
         bloodRequest.setStatus(BloodRequestStatus.PENDING);
+        applyRequestCoordinates(bloodRequest, request.getLatitude(), request.getLongitude(), hospital);
         return bloodRequest;
     }
 
@@ -447,6 +478,7 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setEmergencyLevel(request.getEmergencyLevel());
         bloodRequest.setRequiredBeforeDateTime(request.getRequiredBeforeDateTime());
         bloodRequest.setStatus(BloodRequestStatus.PENDING);
+        applyRequestCoordinates(bloodRequest, request.getLatitude(), request.getLongitude(), user);
         return bloodRequest;
     }
 
@@ -518,6 +550,77 @@ public class BloodRequestServiceImpl implements BloodRequestService {
             pending.setRespondedAt(now);
             bloodRequestRepository.save(pending);
         }
+    }
+
+    private GeoCoordinates resolveRequestOrigin(Double dtoLatitude, Double dtoLongitude, BaseAccount account) {
+        if (dtoLatitude != null && dtoLongitude != null) {
+            GeoCoordinates coordinates = new GeoCoordinates(dtoLatitude, dtoLongitude);
+            if (coordinates.isValid()) {
+                return coordinates;
+            }
+        }
+        if (account.getLatitude() != null && account.getLongitude() != null) {
+            GeoCoordinates coordinates = new GeoCoordinates(account.getLatitude(), account.getLongitude());
+            if (coordinates.isValid()) {
+                return coordinates;
+            }
+        }
+        return null;
+    }
+
+    private void applyRequestCoordinates(
+            BloodRequest bloodRequest,
+            Double dtoLatitude,
+            Double dtoLongitude,
+            BaseAccount account) {
+        Double latitude = dtoLatitude != null ? dtoLatitude : account.getLatitude();
+        Double longitude = dtoLongitude != null ? dtoLongitude : account.getLongitude();
+        bloodRequest.setRequestLatitude(latitude);
+        bloodRequest.setRequestLongitude(longitude);
+    }
+
+    private void syncLiveLocation(BaseAccount account, Double latitude, Double longitude) {
+        if (latitude == null || longitude == null) {
+            return;
+        }
+        account.setLatitude(latitude);
+        account.setLongitude(longitude);
+        if (account instanceof User user) {
+            userRepository.save(user);
+        } else if (account instanceof Donor donor) {
+            donorRepository.save(donor);
+        } else if (account instanceof Hospital hospital) {
+            hospitalRepository.save(hospital);
+        } else if (account instanceof BloodBank bloodBank) {
+            bloodBankRepository.save(bloodBank);
+        }
+    }
+
+    private Comparator<BloodRequest> incomingRequestComparator(Donor donor) {
+        return Comparator
+                .comparing((BloodRequest request) -> request.getStatus() != BloodRequestStatus.PENDING)
+                .thenComparing(request -> distanceForSort(request, donor), Comparator.nullsLast(Double::compareTo))
+                .thenComparing(BloodRequest::getCreatedAt, Comparator.reverseOrder());
+    }
+
+    private Double distanceForSort(BloodRequest request, Donor donor) {
+        if (request.getRequestLatitude() == null
+                || request.getRequestLongitude() == null
+                || donor.getLatitude() == null
+                || donor.getLongitude() == null) {
+            return null;
+        }
+        return GeoDistanceUtil.haversineKm(
+                donor.getLatitude(),
+                donor.getLongitude(),
+                request.getRequestLatitude(),
+                request.getRequestLongitude());
+    }
+
+    private Donor findCurrentDonor() {
+        Long donorId = securityUtil.getCurrentUserId();
+        return donorRepository.findById(donorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Donor not found"));
     }
 
     private Hospital findCurrentHospital() {
