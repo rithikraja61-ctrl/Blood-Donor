@@ -1,27 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
-import DonorSearchFilters from '../../components/donor/DonorSearchFilters';
-import {
-  BLOOD_GROUP_TO_TYPE,
-  EMERGENCY_LEVELS,
-} from '../../utils/constants';
-import { searchDonors } from '../../services/donorService';
+import { EMERGENCY_LEVELS, ROUTES } from '../../utils/constants';
 import {
   getHospitalProfile,
   listPatients,
   sendHospitalBloodRequest,
 } from '../../services/hospitalService';
 import { ApiError } from '../../services/apiClient';
-import { mapDonorsFromApi } from '../../utils/donorMapper';
-import '../../styles/find-donor.css';
+import '../BloodRequest/BloodRequestPage.css';
 import './HospitalSendRequestPage.css';
 
-function toLocalDateTimeInputValue(date) {
-  const d = date || new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+const INITIAL = {
+  contactPersonName: '',
+  contactPhoneNumber: '',
+  emergencyLevel: 'NORMAL',
+  requiredBeforeDateTime: '',
+  reasonForBloodRequirement: '',
+};
 
 function HospitalSendRequestPage() {
   const location = useLocation();
@@ -30,16 +26,10 @@ function HospitalSendRequestPage() {
   const [patients, setPatients] = useState([]);
   const [profile, setProfile] = useState(null);
   const [patientId, setPatientId] = useState(preselectedPatientId || '');
-  const [selectedDonorId, setSelectedDonorId] = useState(null);
-  const [filters, setFilters] = useState({ search: '', bloodGroup: 'O+', pincode: '', availability: 'All' });
-  const [donors, setDonors] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [emergencyLevel, setEmergencyLevel] = useState('NORMAL');
-  const [requiredBeforeDateTime, setRequiredBeforeDateTime] = useState(toLocalDateTimeInputValue());
+  const [form, setForm] = useState(INITIAL);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState(null);
 
   const selectedPatient = useMemo(
     () => patients.find((p) => String(p.id) === String(patientId)),
@@ -57,9 +47,11 @@ function HospitalSendRequestPage() {
       if (preselectedPatientId) {
         setPatientId(String(preselectedPatientId));
       }
-      if (hospitalProfile?.pincode) {
-        setFilters((f) => ({ ...f, pincode: hospitalProfile.pincode }));
-      }
+      setForm((prev) => ({
+        ...prev,
+        contactPersonName: hospitalProfile?.name || '',
+        contactPhoneNumber: hospitalProfile?.phoneNumber || '',
+      }));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load data.');
     }
@@ -70,71 +62,64 @@ function HospitalSendRequestPage() {
   }, [loadInitial]);
 
   useEffect(() => {
-    if (selectedPatient?.bloodGroup) {
-      setFilters((f) => ({ ...f, bloodGroup: selectedPatient.bloodGroup }));
+    if (selectedPatient?.reasonForBlood) {
+      setForm((prev) => ({
+        ...prev,
+        reasonForBloodRequirement: selectedPatient.reasonForBlood,
+      }));
     }
-  }, [selectedPatient?.bloodGroup]);
+  }, [selectedPatient?.reasonForBlood]);
 
-  const handleSearchDonors = async () => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let next = value;
+    if (name === 'contactPhoneNumber') {
+      next = value.replace(/\D/g, '').slice(0, 15);
+    }
+    setForm((prev) => ({ ...prev, [name]: next }));
     setError('');
-    if (!/^[0-9]{6}$/.test(filters.pincode)) {
-      setError('Enter a valid 6-digit PIN code.');
-      return;
-    }
-    setSearchLoading(true);
-    setSelectedDonorId(null);
-    try {
-      const data = await searchDonors(filters.bloodGroup, filters.pincode);
-      setDonors(mapDonorsFromApi(data.content));
-      setHasSearched(true);
-    } catch (err) {
-      setDonors([]);
-      setHasSearched(true);
-      setError(err instanceof ApiError ? err.message : 'Donor search failed.');
-    } finally {
-      setSearchLoading(false);
-    }
   };
-
-  const filteredDonors = donors.filter((d) => {
-    const matchName = d.name.toLowerCase().includes(filters.search.toLowerCase());
-    const matchAvailability =
-      filters.availability === 'All' || d.availability === filters.availability;
-    return matchName && matchAvailability;
-  });
 
   const handleSendRequest = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
+    setSuccess(null);
 
     if (!patientId) {
       setError('Select a patient.');
       return;
     }
-    if (!selectedDonorId) {
-      setError('Select a donor from search results.');
+    if (!form.contactPersonName.trim()) {
+      setError('Contact person name is required.');
+      return;
+    }
+    if (!/^[0-9]{10,15}$/.test(form.contactPhoneNumber)) {
+      setError('Enter a valid contact phone number (10–15 digits).');
+      return;
+    }
+    if (!form.requiredBeforeDateTime) {
+      setError('Required-by date and time is required.');
+      return;
+    }
+    if (!/^[0-9]{6}$/.test(profile?.pincode || '')) {
+      setError('Set a valid 6-digit pincode in your hospital profile before sending a request.');
       return;
     }
 
     setSubmitLoading(true);
     try {
-      const p = selectedPatient;
-      await sendHospitalBloodRequest({
+      const responses = await sendHospitalBloodRequest({
         patientId: Number(patientId),
-        selectedDonorId: Number(selectedDonorId),
-        patientName: p?.patientName,
-        patientAge: p?.age,
-        patientGender: p?.gender,
-        requiredBloodGroup: p?.bloodType || BLOOD_GROUP_TO_TYPE[filters.bloodGroup],
-        reasonForBloodRequirement: p?.reasonForBlood,
-        emergencyLevel,
-        requiredBeforeDateTime: requiredBeforeDateTime.length === 16
-          ? `${requiredBeforeDateTime}:00`
-          : requiredBeforeDateTime,
+        contactPersonName: form.contactPersonName.trim(),
+        contactPhoneNumber: form.contactPhoneNumber,
+        emergencyLevel: form.emergencyLevel,
+        requiredBeforeDateTime: form.requiredBeforeDateTime,
+        reasonForBloodRequirement: form.reasonForBloodRequirement.trim() || undefined,
       });
-      setSuccess('Blood request sent successfully. Donor will see it in incoming requests.');
-      setSelectedDonorId(null);
+      setSuccess({
+        count: responses.length,
+        requestGroupId: responses[0]?.requestGroupId,
+      });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to send request.');
     } finally {
@@ -143,10 +128,10 @@ function HospitalSendRequestPage() {
   };
 
   return (
-    <div className="find-donor-page hospital-send-request">
+    <div className="blood-request-page hospital-send-request">
       <PageHeader
         title="Send blood request"
-        subtitle="1) Search donors 2) Select one donor 3) Confirm and send — donor ID is set automatically."
+        subtitle="Select a patient — your request is broadcast automatically to eligible donors nearby."
       />
 
       <section className="hospital-send-request__patient">
@@ -165,91 +150,91 @@ function HospitalSendRequestPage() {
         </select>
         {selectedPatient && (
           <p className="hospital-send-request__patient-meta">
-            {selectedPatient.patientName}, age {selectedPatient.age} — {selectedPatient.reasonForBlood}
+            {selectedPatient.patientName}, age {selectedPatient.age} — blood {selectedPatient.bloodGroup}
           </p>
         )}
       </section>
 
-      <DonorSearchFilters
-        search={filters.search}
-        bloodGroup={filters.bloodGroup}
-        pincode={filters.pincode}
-        availability={filters.availability}
-        onSearchChange={(v) => setFilters((p) => ({ ...p, search: v }))}
-        onBloodGroupChange={(v) => setFilters((p) => ({ ...p, bloodGroup: v }))}
-        onPincodeChange={(v) => setFilters((p) => ({ ...p, pincode: v.replace(/\D/g, '').slice(0, 6) }))}
-        onAvailabilityChange={(v) => setFilters((p) => ({ ...p, availability: v }))}
-        onReset={() => {
-          setFilters({
-            search: '',
-            bloodGroup: selectedPatient?.bloodGroup || 'O+',
-            pincode: profile?.pincode || '',
-            availability: 'All',
-          });
-          setDonors([]);
-          setHasSearched(false);
-          setSelectedDonorId(null);
-        }}
-        onSearch={handleSearchDonors}
-        loading={searchLoading}
-      />
+      <div className="blood-request-page__profile">
+        <p><strong>Hospital pincode:</strong> {profile?.pincode || 'Not set'}</p>
+        {!profile?.pincode && (
+          <p className="blood-request-page__hint">
+            Update your <Link to={ROUTES.HOSPITAL_PROFILE}>hospital profile</Link> before sending a request.
+          </p>
+        )}
+      </div>
 
-      {error && <p className="find-donor-page__error">{error}</p>}
-      {success && <p className="hospital-send-request__success">{success}</p>}
-
-      {hasSearched && (
-        <p className="find-donor-page__count">{filteredDonors.length} donor(s) — click Select</p>
+      {success && (
+        <div className="blood-request-page__success" role="status">
+          Request sent to {success.count} nearby donor(s).
+          {success.requestGroupId && (
+            <span> Group ID: {success.requestGroupId.slice(0, 8)}…</span>
+          )}
+          {' '}
+          <Link to={ROUTES.HOSPITAL_REQUESTS}>View sent requests</Link>
+        </div>
       )}
 
-      <ul className="hospital-send-request__donors">
-        {filteredDonors.map((donor) => (
-          <li
-            key={donor.id}
-            className={`hospital-send-request__donor-card ${
-              selectedDonorId === donor.id ? 'hospital-send-request__donor-card--selected' : ''
-            }`}
-          >
-            <div>
-              <strong>{donor.name}</strong> · {donor.bloodGroup} · {donor.city} · {donor.pincode}
-              <br />
-              <small>{donor.distanceLabel} · {donor.availability}</small>
-            </div>
-            <button
-              type="button"
-              disabled={donor.availability !== 'Available'}
-              onClick={() => setSelectedDonorId(donor.id)}
-            >
-              {selectedDonorId === donor.id ? 'Selected' : 'Select donor'}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {error && <p className="blood-request-page__error">{error}</p>}
 
-      {selectedDonorId && (
-        <form className="hospital-send-request__confirm" onSubmit={handleSendRequest}>
-          <h3>Confirm request</h3>
-          <p>
-            Selected donor ID: <strong>{selectedDonorId}</strong> (from search, not typed manually)
-          </p>
-          <label htmlFor="emergency">Emergency level</label>
-          <select id="emergency" value={emergencyLevel} onChange={(e) => setEmergencyLevel(e.target.value)}>
+      <form className="blood-request-page__form" onSubmit={handleSendRequest}>
+        <label className="blood-request-page__field">
+          Contact person name
+          <input
+            type="text"
+            name="contactPersonName"
+            value={form.contactPersonName}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label className="blood-request-page__field">
+          Contact phone
+          <input
+            type="tel"
+            name="contactPhoneNumber"
+            value={form.contactPhoneNumber}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label className="blood-request-page__field">
+          Emergency level
+          <select name="emergencyLevel" value={form.emergencyLevel} onChange={handleChange}>
             {EMERGENCY_LEVELS.map((lvl) => (
               <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
             ))}
           </select>
-          <label htmlFor="requiredBy">Required before</label>
+        </label>
+
+        <label className="blood-request-page__field">
+          Required before
           <input
-            id="requiredBy"
             type="datetime-local"
-            value={requiredBeforeDateTime}
-            onChange={(e) => setRequiredBeforeDateTime(e.target.value)}
+            name="requiredBeforeDateTime"
+            value={form.requiredBeforeDateTime}
+            onChange={handleChange}
             required
           />
-          <button type="submit" className="auth-form__submit" disabled={submitLoading}>
-            {submitLoading ? 'Sending…' : 'Send blood request'}
-          </button>
-        </form>
-      )}
+        </label>
+
+        <label className="blood-request-page__field">
+          Reason (optional)
+          <textarea
+            name="reasonForBloodRequirement"
+            value={form.reasonForBloodRequirement}
+            onChange={handleChange}
+            rows={3}
+            maxLength={1000}
+          />
+        </label>
+
+        <button type="submit" className="blood-request-page__submit" disabled={submitLoading || !patientId}>
+          {submitLoading ? 'Sending…' : 'Broadcast request to nearby donors'}
+        </button>
+      </form>
     </div>
   );
 }

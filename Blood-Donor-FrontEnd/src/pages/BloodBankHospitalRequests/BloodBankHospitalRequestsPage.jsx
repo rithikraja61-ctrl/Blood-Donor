@@ -72,8 +72,8 @@ function BloodBankHospitalRequestsPage() {
   return (
     <div className="hospital-requests blood-bank-requests">
       <PageHeader
-        title="Hospital requests"
-        subtitle="Review incoming requests, check stock, approve or reject."
+        title="Stock requests"
+        subtitle="Hospital requests for blood units from your inventory — approve or reject."
       />
 
       {error && <p className="hospital-requests__error">{error}</p>}
@@ -82,7 +82,7 @@ function BloodBankHospitalRequestsPage() {
       {loading ? (
         <p>Loading…</p>
       ) : requests.length === 0 ? (
-        <p>No hospital requests yet.</p>
+        <p>No pending stock requests.</p>
       ) : (
         <div className="hospital-requests__table-wrap">
           <table className="hospital-requests__table">

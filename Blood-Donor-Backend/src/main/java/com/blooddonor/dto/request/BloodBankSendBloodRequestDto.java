@@ -1,5 +1,6 @@
 package com.blooddonor.dto.request;
 
+import com.blooddonor.validation.BloodType;
 import com.blooddonor.validation.EmergencyLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,10 +12,13 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class SendBloodRequestDto {
+public class BloodBankSendBloodRequestDto {
 
-    @NotNull(message = "Patient id is required")
-    private Long patientId;
+    @NotBlank(message = "Patient or recipient name is required")
+    private String patientName;
+
+    @NotNull(message = "Blood type is required")
+    private BloodType bloodType;
 
     @NotBlank(message = "Contact person name is required")
     private String contactPersonName;

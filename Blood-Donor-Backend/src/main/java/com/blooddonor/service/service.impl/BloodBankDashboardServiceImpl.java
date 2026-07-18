@@ -13,6 +13,7 @@ import com.blooddonor.service.BloodBankDashboardService;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodRequestStatus;
 import com.blooddonor.validation.HospitalRequestStatus;
+import com.blooddonor.validation.RequesterType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,8 +62,13 @@ public class BloodBankDashboardServiceImpl implements BloodBankDashboardService 
         long hospitalTotal = hospitalRequestRepository.countByBloodBankId(bloodBankId);
         long hospitalPending = hospitalRequestRepository.countByBloodBankIdAndStatus(
                 bloodBankId, HospitalRequestStatus.PENDING);
-        long donorTotal = bloodRequestRepository.count();
-        long donorPending = bloodRequestRepository.countByStatus(BloodRequestStatus.PENDING);
+        List<RequesterType> routingTypes = List.of(RequesterType.USER, RequesterType.HOSPITAL);
+        long receivedRoutingTotal = bloodRequestRepository.countByRequesterTypeIn(routingTypes);
+        long receivedRoutingPending = bloodRequestRepository.countByRequesterTypeInAndStatus(
+                routingTypes, BloodRequestStatus.PENDING);
+        long sentDonorTotal = bloodRequestRepository.countByBloodBankId(bloodBankId);
+        long sentDonorPending = bloodRequestRepository.countByBloodBankIdAndStatus(
+                bloodBankId, BloodRequestStatus.PENDING);
 
         List<BloodTypeAvailabilityDto> availabilityByBloodType = bloodInventoryRepository
                 .findByBloodBankIdOrderByBloodGroupAsc(bloodBankId)
@@ -88,8 +94,10 @@ public class BloodBankDashboardServiceImpl implements BloodBankDashboardService 
                         bloodBankId, startOfMonth, startOfNextMonth))
                 .hospitalRequestsTotal(hospitalTotal)
                 .hospitalRequestsPending(hospitalPending)
-                .donorRequestsTotal(donorTotal)
-                .donorRequestsPending(donorPending)
+                .receivedRoutingRequestsTotal(receivedRoutingTotal)
+                .receivedRoutingRequestsPending(receivedRoutingPending)
+                .sentDonorRequestsTotal(sentDonorTotal)
+                .sentDonorRequestsPending(sentDonorPending)
                 .availabilityByBloodType(availabilityByBloodType)
                 .build();
     }

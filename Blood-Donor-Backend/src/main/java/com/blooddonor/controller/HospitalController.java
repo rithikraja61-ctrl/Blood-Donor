@@ -126,11 +126,11 @@ public class HospitalController {
     }
 
     @PostMapping("/blood-requests")
-    public ResponseEntity<ApiResponse<BloodRequestResponse>> sendBloodRequest(
+    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> sendBloodRequests(
             @Valid @RequestBody SendBloodRequestDto request) {
-        BloodRequestResponse response = bloodRequestService.sendBloodRequest(request);
+        List<BloodRequestResponse> response = bloodRequestService.sendBloodRequests(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Blood request sent successfully", response));
+                .body(ApiResponse.success("Blood request(s) sent successfully", response));
     }
 
     @GetMapping("/blood-requests")

@@ -2,5 +2,6 @@ package com.blooddonor.validation;
 
 public enum RequesterType {
     USER,
-    HOSPITAL
+    HOSPITAL,
+    BLOOD_BANK
 }

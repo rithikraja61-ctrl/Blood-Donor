@@ -1,5 +1,6 @@
 package com.blooddonor.controller;
 
+import com.blooddonor.dto.request.BloodBankSendBloodRequestDto;
 import com.blooddonor.dto.request.BloodBankUpdateRequest;
 import com.blooddonor.dto.request.BloodInventoryUpdateRequest;
 import com.blooddonor.dto.request.BloodStockAdjustRequest;
@@ -7,6 +8,7 @@ import com.blooddonor.dto.response.BloodBankDashboardResponse;
 import com.blooddonor.dto.response.BloodBankResponse;
 import com.blooddonor.dto.response.BloodInventoryResponse;
 import com.blooddonor.dto.response.BloodIssueResponse;
+import com.blooddonor.dto.response.BloodRequestResponse;
 import com.blooddonor.dto.response.HospitalRequestResponse;
 import com.blooddonor.response.ApiResponse;
 import com.blooddonor.service.BloodBankDashboardService;
@@ -14,7 +16,9 @@ import com.blooddonor.service.BloodBankHospitalRequestService;
 import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.service.BloodBankIssueService;
 import com.blooddonor.service.BloodBankService;
+import com.blooddonor.service.BloodRequestService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,18 +40,21 @@ public class BloodBankController {
     private final BloodBankInventoryService bloodBankInventoryService;
     private final BloodBankHospitalRequestService bloodBankHospitalRequestService;
     private final BloodBankIssueService bloodBankIssueService;
+    private final BloodRequestService bloodRequestService;
 
     public BloodBankController(
             BloodBankService bloodBankService,
             BloodBankDashboardService bloodBankDashboardService,
             BloodBankInventoryService bloodBankInventoryService,
             BloodBankHospitalRequestService bloodBankHospitalRequestService,
-            BloodBankIssueService bloodBankIssueService) {
+            BloodBankIssueService bloodBankIssueService,
+            BloodRequestService bloodRequestService) {
         this.bloodBankService = bloodBankService;
         this.bloodBankDashboardService = bloodBankDashboardService;
         this.bloodBankInventoryService = bloodBankInventoryService;
         this.bloodBankHospitalRequestService = bloodBankHospitalRequestService;
         this.bloodBankIssueService = bloodBankIssueService;
+        this.bloodRequestService = bloodRequestService;
     }
 
     @GetMapping("/me")
@@ -133,5 +140,39 @@ public class BloodBankController {
     public ResponseEntity<ApiResponse<List<BloodIssueResponse>>> getIssueHistory() {
         List<BloodIssueResponse> response = bloodBankIssueService.getIssueHistory();
         return ResponseEntity.ok(ApiResponse.success("Issue history fetched successfully", response));
+    }
+
+    @GetMapping("/received-blood-requests")
+    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> listReceivedBloodRequests() {
+        List<BloodRequestResponse> response = bloodRequestService.listReceivedRoutingRequestsForBloodBank();
+        return ResponseEntity.ok(ApiResponse.success("Received blood requests fetched successfully", response));
+    }
+
+    @PostMapping("/received-blood-requests/{requestId}/accept")
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> acceptReceivedBloodRequest(
+            @PathVariable Long requestId) {
+        BloodRequestResponse response = bloodRequestService.acceptReceivedRequestForBloodBank(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request accepted successfully", response));
+    }
+
+    @PostMapping("/received-blood-requests/{requestId}/reject")
+    public ResponseEntity<ApiResponse<BloodRequestResponse>> rejectReceivedBloodRequest(
+            @PathVariable Long requestId) {
+        BloodRequestResponse response = bloodRequestService.rejectReceivedRequestForBloodBank(requestId);
+        return ResponseEntity.ok(ApiResponse.success("Blood request rejected successfully", response));
+    }
+
+    @PostMapping("/blood-requests")
+    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> sendBloodRequests(
+            @Valid @RequestBody BloodBankSendBloodRequestDto request) {
+        List<BloodRequestResponse> response = bloodRequestService.sendBloodRequestsForBloodBank(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Blood request(s) sent successfully", response));
+    }
+
+    @GetMapping("/blood-requests")
+    public ResponseEntity<ApiResponse<List<BloodRequestResponse>>> listSentBloodRequests() {
+        List<BloodRequestResponse> response = bloodRequestService.listSentRequestsForBloodBank();
+        return ResponseEntity.ok(ApiResponse.success("Sent blood requests fetched successfully", response));
     }
 }

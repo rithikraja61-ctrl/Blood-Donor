@@ -51,6 +51,10 @@ public class BloodRequest {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blood_bank_id")
+    private BloodBank bloodBank;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "donor_id", nullable = false)
     private Donor donor;

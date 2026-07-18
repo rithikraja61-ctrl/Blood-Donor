@@ -26,6 +26,8 @@ import BloodBankHomePage from '../pages/BloodBankHome/BloodBankHomePage';
 import BloodBankProfilePage from '../pages/BloodBankProfile/BloodBankProfilePage';
 import BloodBankInventoryPage from '../pages/BloodBankInventory/BloodBankInventoryPage';
 import BloodBankHospitalRequestsPage from '../pages/BloodBankHospitalRequests/BloodBankHospitalRequestsPage';
+import BloodBankReceivedRequestsPage from '../pages/BloodBankReceivedRequests/BloodBankReceivedRequestsPage';
+import BloodBankSendRequestPage from '../pages/BloodBankSendRequest/BloodBankSendRequestPage';
 import BloodBankIssueHistoryPage from '../pages/BloodBankIssueHistory/BloodBankIssueHistoryPage';
 
 function AppRoutes() {
@@ -86,6 +88,8 @@ function AppRoutes() {
         <Route path="/blood-bank-home" element={<BloodBankHomePage />} />
         <Route path="/blood-bank-profile" element={<BloodBankProfilePage />} />
         <Route path="/blood-bank-inventory" element={<BloodBankInventoryPage />} />
+        <Route path="/blood-bank-received-requests" element={<BloodBankReceivedRequestsPage />} />
+        <Route path="/blood-bank-send-request" element={<BloodBankSendRequestPage />} />
         <Route path="/blood-bank-hospital-requests" element={<BloodBankHospitalRequestsPage />} />
         <Route path="/blood-bank-issue-history" element={<BloodBankIssueHistoryPage />} />
       </Route>

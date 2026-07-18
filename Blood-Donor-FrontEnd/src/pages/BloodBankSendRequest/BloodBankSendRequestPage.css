@@ -1,0 +1,27 @@
+.blood-bank-send-request__sent {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--landing-border, #e0e0e0);
+}
+
+.blood-bank-send-request__sent h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.blood-bank-send-request__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.blood-bank-send-request__item {
+  padding: 0.75rem 1rem;
+  background: var(--color-white, #fff);
+  border: 1px solid var(--landing-border, #e0e0e0);
+  border-radius: var(--radius-md, 10px);
+  font-size: 0.9rem;
+}

@@ -2,6 +2,7 @@ package com.blooddonor.repository;
 
 import com.blooddonor.entity.BloodRequest;
 import com.blooddonor.validation.BloodRequestStatus;
+import com.blooddonor.validation.RequesterType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -75,4 +76,21 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Long
             @Param("statuses") List<BloodRequestStatus> statuses);
 
     long countByStatus(BloodRequestStatus status);
+
+    List<BloodRequest> findByRequesterTypeInOrderByCreatedAtDesc(List<RequesterType> requesterTypes);
+
+    List<BloodRequest> findByRequesterTypeInAndStatusOrderByCreatedAtDesc(
+            List<RequesterType> requesterTypes, BloodRequestStatus status);
+
+    long countByRequesterTypeIn(List<RequesterType> requesterTypes);
+
+    long countByRequesterTypeInAndStatus(List<RequesterType> requesterTypes, BloodRequestStatus status);
+
+    List<BloodRequest> findByBloodBankIdOrderByCreatedAtDesc(Long bloodBankId);
+
+    long countByBloodBankId(Long bloodBankId);
+
+    long countByBloodBankIdAndStatus(Long bloodBankId, BloodRequestStatus status);
+
+    List<BloodRequest> findByPatientIdAndStatus(Long patientId, BloodRequestStatus status);
 }

@@ -1,5 +1,6 @@
 package com.blooddonor.service;
 
+import com.blooddonor.dto.request.BloodBankSendBloodRequestDto;
 import com.blooddonor.dto.request.SendBloodRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.response.AssignedDonorResponse;
@@ -9,9 +10,17 @@ import java.util.List;
 
 public interface BloodRequestService {
 
-    BloodRequestResponse sendBloodRequest(SendBloodRequestDto request);
+    List<BloodRequestResponse> sendBloodRequests(SendBloodRequestDto request);
 
     List<BloodRequestResponse> sendBloodRequestsForUser(UserSendBloodRequestDto request);
+
+    List<BloodRequestResponse> sendBloodRequestsForBloodBank(BloodBankSendBloodRequestDto request);
+
+    List<BloodRequestResponse> listReceivedRoutingRequestsForBloodBank();
+
+    BloodRequestResponse acceptReceivedRequestForBloodBank(Long requestId);
+
+    BloodRequestResponse rejectReceivedRequestForBloodBank(Long requestId);
 
     List<BloodRequestResponse> listSentRequestsForHospital();
 
@@ -20,6 +29,8 @@ public interface BloodRequestService {
     AssignedDonorResponse getAssignedDonorForRequest(Long requestId);
 
     AssignedDonorResponse getAssignedDonorForPatient(Long patientId);
+
+    List<BloodRequestResponse> listSentRequestsForBloodBank();
 
     List<BloodRequestResponse> listSentRequestsForUser();
 

@@ -92,8 +92,8 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
     public List<HospitalRequestResponse> getAllRequests() {
         BloodBank bloodBank = findCurrentBloodBank();
         expirePendingRequests(bloodBank.getId());
-        return hospitalRequestRepository.findByBloodBankIdOrderByCreatedAtDesc(bloodBank.getId())
-                .stream()
+        return hospitalRequestRepository.findByBloodBankIdAndStatus(
+                        bloodBank.getId(), HospitalRequestStatus.PENDING).stream()
                 .map(bloodBankModuleMapper::toHospitalRequestResponse)
                 .toList();
     }

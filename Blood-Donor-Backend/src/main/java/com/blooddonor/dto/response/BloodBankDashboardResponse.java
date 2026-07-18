@@ -23,9 +23,13 @@ public class BloodBankDashboardResponse {
     private long hospitalRequestsTotal;
     private long hospitalRequestsPending;
 
-    /** User/Hospital → donor blood requests (system-wide donor routing) */
-    private long donorRequestsTotal;
-    private long donorRequestsPending;
+    /** User/Hospital → donor blood requests visible to blood bank */
+    private long receivedRoutingRequestsTotal;
+    private long receivedRoutingRequestsPending;
+
+    /** Blood bank → donor requests sent by this blood bank */
+    private long sentDonorRequestsTotal;
+    private long sentDonorRequestsPending;
 
     private List<BloodTypeAvailabilityDto> availabilityByBloodType;
 }

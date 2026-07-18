@@ -75,3 +75,35 @@ export async function getBloodBankIssueHistory() {
   const res = await apiRequest('/bloodbanks/issue-history');
   return res.data;
 }
+
+export async function listReceivedBloodRequests() {
+  const res = await apiRequest('/bloodbanks/received-blood-requests');
+  return res.data;
+}
+
+export async function acceptReceivedBloodRequest(requestId) {
+  const res = await apiRequest(`/bloodbanks/received-blood-requests/${requestId}/accept`, {
+    method: 'POST',
+  });
+  return res.data;
+}
+
+export async function rejectReceivedBloodRequest(requestId) {
+  const res = await apiRequest(`/bloodbanks/received-blood-requests/${requestId}/reject`, {
+    method: 'POST',
+  });
+  return res.data;
+}
+
+export async function sendBloodBankBloodRequest(payload) {
+  const res = await apiRequest('/bloodbanks/blood-requests', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return res.data;
+}
+
+export async function listSentBloodBankBloodRequests() {
+  const res = await apiRequest('/bloodbanks/blood-requests');
+  return res.data;
+}
