@@ -1,12 +1,16 @@
 package com.blooddonor.controller;
 
 import com.blooddonor.dto.request.LiveLocationRequest;
+import com.blooddonor.dto.request.UserBloodBankRequestDto;
 import com.blooddonor.dto.request.UserSendBloodRequestDto;
 import com.blooddonor.dto.request.UserUpdateRequest;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestGroupSummaryResponse;
 import com.blooddonor.dto.response.BloodRequestResponse;
+import com.blooddonor.dto.response.HospitalRequestResponse;
 import com.blooddonor.dto.response.UserResponse;
 import com.blooddonor.response.ApiResponse;
+import com.blooddonor.service.BloodBankHospitalRequestService;
 import com.blooddonor.service.BloodRequestService;
 import com.blooddonor.service.UserService;
 import jakarta.validation.Valid;
@@ -29,10 +33,15 @@ public class UserController {
 
     private final UserService userService;
     private final BloodRequestService bloodRequestService;
+    private final BloodBankHospitalRequestService bloodBankHospitalRequestService;
 
-    public UserController(UserService userService, BloodRequestService bloodRequestService) {
+    public UserController(
+            UserService userService,
+            BloodRequestService bloodRequestService,
+            BloodBankHospitalRequestService bloodBankHospitalRequestService) {
         this.userService = userService;
         this.bloodRequestService = bloodRequestService;
+        this.bloodBankHospitalRequestService = bloodBankHospitalRequestService;
     }
 
     @GetMapping("/me")
@@ -59,6 +68,20 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteAccount() {
         userService.deleteAccount();
         return ResponseEntity.ok(ApiResponse.success("Account deleted successfully"));
+    }
+
+    @GetMapping("/bloodbanks")
+    public ResponseEntity<ApiResponse<List<BloodBankSummaryResponse>>> listBloodBanks() {
+        List<BloodBankSummaryResponse> response = userService.listAvailableBloodBanks();
+        return ResponseEntity.ok(ApiResponse.success("Blood banks fetched successfully", response));
+    }
+
+    @PostMapping("/blood-bank-requests")
+    public ResponseEntity<ApiResponse<HospitalRequestResponse>> sendBloodBankRequest(
+            @Valid @RequestBody UserBloodBankRequestDto request) {
+        HospitalRequestResponse response = bloodBankHospitalRequestService.createRequestFromUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Blood bank request sent successfully", response));
     }
 
     @PostMapping("/blood-requests")

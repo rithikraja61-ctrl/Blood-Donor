@@ -104,26 +104,53 @@ public class BloodRequestServiceImpl implements BloodRequestService {
 
         String bloodGroup = patient.getBloodType().getDisplayName();
         GeoCoordinates origin = resolveRequestOrigin(request.getLatitude(), request.getLongitude(), hospital);
-        List<Donor> nearbyDonors = eligibleDonorFinder.findNearbyEligibleDonors(
-                bloodGroup,
-                origin,
-                hospital.getPincode(),
-                googleMapsProperties.getDefaultSearchRadiusKm());
+        double radiusKm = request.getRadiusKm() != null
+                ? request.getRadiusKm()
+                : googleMapsProperties.getDefaultSearchRadiusKm();
 
-        if (nearbyDonors.isEmpty()) {
+        List<Donor> targetDonors = resolveTargetDonorsForHospital(
+                request, bloodGroup, origin, hospital.getPincode(), radiusKm);
+
+        if (targetDonors.isEmpty()) {
             throw new BadRequestException("No eligible donors found nearby");
         }
 
         String requestGroupId = UUID.randomUUID().toString();
         List<BloodRequestResponse> responses = new ArrayList<>();
 
-        for (Donor donor : nearbyDonors) {
+        for (Donor donor : targetDonors) {
             BloodRequest bloodRequest = buildHospitalBloodRequest(
                     requestGroupId, hospital, patient, donor, reason, request);
             responses.add(bloodRequestMapper.toResponse(bloodRequestRepository.save(bloodRequest)));
         }
 
         return responses;
+    }
+
+    private List<Donor> resolveTargetDonorsForHospital(
+            SendBloodRequestDto request,
+            String bloodGroup,
+            GeoCoordinates origin,
+            String pinCodeFallback,
+            double radiusKm) {
+        if (request.getDonorIds() != null && !request.getDonorIds().isEmpty()) {
+            List<Long> uniqueIds = request.getDonorIds().stream().distinct().toList();
+            List<Donor> selectedDonors = new ArrayList<>();
+            for (Long donorId : uniqueIds) {
+                if (!eligibleDonorFinder.isEligibleSelectedDonor(
+                        bloodGroup, origin, pinCodeFallback, donorId, radiusKm)) {
+                    throw new BadRequestException(
+                            "Selected donor is not eligible within " + (int) radiusKm + " km radius");
+                }
+                Donor donor = donorRepository.findById(donorId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Donor not found"));
+                selectedDonors.add(donor);
+            }
+            return selectedDonors;
+        }
+
+        return eligibleDonorFinder.findNearbyEligibleDonors(
+                bloodGroup, origin, pinCodeFallback, radiusKm);
     }
 
     @Override

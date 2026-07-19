@@ -22,9 +22,9 @@ function UserHomePage() {
           <span className="user-home__card-icon" aria-hidden="true">🩸</span>
           <span className="user-home__card-label">Request Blood</span>
         </Link>
-        <Link to={ROUTES.FIND_DONOR} className="user-home__card">
-          <span className="user-home__card-icon" aria-hidden="true">🔍</span>
-          <span className="user-home__card-label">Browse Donors</span>
+        <Link to={ROUTES.MY_REQUESTS} className="user-home__card">
+          <span className="user-home__card-icon" aria-hidden="true">📋</span>
+          <span className="user-home__card-label">My Requests</span>
         </Link>
       </div>
     </div>

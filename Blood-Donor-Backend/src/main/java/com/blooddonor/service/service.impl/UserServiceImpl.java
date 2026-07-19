@@ -2,10 +2,12 @@ package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.LiveLocationRequest;
 import com.blooddonor.dto.request.UserUpdateRequest;
+import com.blooddonor.dto.response.BloodBankSummaryResponse;
 import com.blooddonor.dto.response.UserResponse;
 import com.blooddonor.entity.User;
 import com.blooddonor.exception.ResourceNotFoundException;
 import com.blooddonor.mapper.UserMapper;
+import com.blooddonor.repository.BloodBankRepository;
 import com.blooddonor.repository.UserRepository;
 import com.blooddonor.service.UserService;
 import com.blooddonor.service.AccountLocationService;
@@ -13,10 +15,13 @@ import com.blooddonor.util.SecurityUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final BloodBankRepository bloodBankRepository;
     private final UserMapper userMapper;
     private final SecurityUtil securityUtil;
     private final PasswordEncoder passwordEncoder;
@@ -24,11 +29,13 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(
             UserRepository userRepository,
+            BloodBankRepository bloodBankRepository,
             UserMapper userMapper,
             SecurityUtil securityUtil,
             PasswordEncoder passwordEncoder,
             AccountLocationService accountLocationService) {
         this.userRepository = userRepository;
+        this.bloodBankRepository = bloodBankRepository;
         this.userMapper = userMapper;
         this.securityUtil = securityUtil;
         this.passwordEncoder = passwordEncoder;
@@ -75,6 +82,18 @@ public class UserServiceImpl implements UserService {
     public void deleteAccount() {
         User user = findCurrentUser();
         userRepository.delete(user);
+    }
+
+    @Override
+    public List<BloodBankSummaryResponse> listAvailableBloodBanks() {
+        return bloodBankRepository.findAll().stream()
+                .map(bloodBank -> BloodBankSummaryResponse.builder()
+                        .id(bloodBank.getId())
+                        .bloodBankName(bloodBank.getName())
+                        .city(bloodBank.getCity())
+                        .pinCode(bloodBank.getPincode())
+                        .build())
+                .toList();
     }
 
     private User findCurrentUser() {

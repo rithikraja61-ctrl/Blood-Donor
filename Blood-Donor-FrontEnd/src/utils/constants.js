@@ -53,7 +53,6 @@ export const ROUTES = {
   LOGIN: '/login',
   REGISTER: '/register',
   USER_HOME: '/user-home',
-  FIND_DONOR: '/find-donor',
   REQUEST_BLOOD: '/request-blood',
   MY_REQUESTS: '/my-requests',
   PROFILE: '/profile',

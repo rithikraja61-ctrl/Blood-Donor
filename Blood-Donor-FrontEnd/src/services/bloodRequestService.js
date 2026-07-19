@@ -5,6 +5,22 @@ function toApiDateTime(value) {
   return value.length === 16 ? `${value}:00` : value;
 }
 
+export async function listUserBloodBanks() {
+  const res = await apiRequest('/users/bloodbanks');
+  return res.data;
+}
+
+export async function sendUserBloodBankRequest(payload) {
+  const res = await apiRequest('/users/blood-bank-requests', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...payload,
+      requiredBefore: toApiDateTime(payload.requiredBefore),
+    }),
+  });
+  return res.data;
+}
+
 export async function sendUserBloodRequest(payload) {
   const res = await apiRequest('/users/blood-requests', {
     method: 'POST',
