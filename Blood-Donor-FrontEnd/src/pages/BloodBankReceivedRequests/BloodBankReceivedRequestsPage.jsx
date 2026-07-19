@@ -2,11 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import PageHeader from '../../components/common/PageHeader';
 import {
   acceptReceivedBloodRequest,
+  approveBloodBankHospitalRequest,
+  listBloodBankHospitalRequests,
   listReceivedBloodRequests,
+  rejectBloodBankHospitalRequest,
   rejectReceivedBloodRequest,
 } from '../../services/bloodBankService';
 import { ApiError } from '../../services/apiClient';
-import { REQUESTER_TYPE_LABELS } from '../../utils/constants';
+import {
+  HOSPITAL_BLOOD_BANK_REQUEST_STATUS_LABELS,
+  REQUESTER_TYPE_LABELS,
+} from '../../utils/constants';
 import '../HospitalRequests/HospitalRequestsPage.css';
 import '../BloodBankHospitalRequests/BloodBankHospitalRequestsPage.css';
 
@@ -15,7 +21,7 @@ function formatDateTime(value) {
   return new Date(value).toLocaleString();
 }
 
-function groupPendingRequests(requests) {
+function groupPendingRoutingRequests(requests) {
   const groups = new Map();
 
   for (const req of requests) {
@@ -44,21 +50,32 @@ function groupPendingRequests(requests) {
 }
 
 function BloodBankReceivedRequestsPage() {
-  const [requests, setRequests] = useState([]);
+  const [activeTab, setActiveTab] = useState('units');
+  const [unitRequests, setUnitRequests] = useState([]);
+  const [routingRequests, setRoutingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [actionKey, setActionKey] = useState(null);
 
-  const groupedRequests = useMemo(() => groupPendingRequests(requests), [requests]);
+  const groupedRoutingRequests = useMemo(
+    () => groupPendingRoutingRequests(routingRequests),
+    [routingRequests],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      setRequests(await listReceivedBloodRequests());
+      const [units, routing] = await Promise.all([
+        listBloodBankHospitalRequests(),
+        listReceivedBloodRequests(),
+      ]);
+      setUnitRequests(units);
+      setRoutingRequests(routing);
     } catch (err) {
-      setRequests([]);
+      setUnitRequests([]);
+      setRoutingRequests([]);
       setError(err instanceof ApiError ? err.message : 'Failed to load received requests.');
     } finally {
       setLoading(false);
@@ -69,8 +86,38 @@ function BloodBankReceivedRequestsPage() {
     load();
   }, [load]);
 
-  const handleAccept = async (group) => {
-    setActionKey(group.key);
+  const handleApproveUnit = async (requestId) => {
+    setActionKey(`unit-${requestId}`);
+    setError('');
+    setSuccess('');
+    try {
+      await approveBloodBankHospitalRequest(requestId);
+      setSuccess(`Request #${requestId} approved and blood issued.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Approve failed.');
+    } finally {
+      setActionKey(null);
+    }
+  };
+
+  const handleRejectUnit = async (requestId) => {
+    setActionKey(`unit-${requestId}`);
+    setError('');
+    setSuccess('');
+    try {
+      await rejectBloodBankHospitalRequest(requestId);
+      setSuccess(`Request #${requestId} rejected.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Reject failed.');
+    } finally {
+      setActionKey(null);
+    }
+  };
+
+  const handleAcceptRouting = async (group) => {
+    setActionKey(`routing-${group.key}`);
     setError('');
     setSuccess('');
     try {
@@ -86,8 +133,8 @@ function BloodBankReceivedRequestsPage() {
     }
   };
 
-  const handleReject = async (group) => {
-    setActionKey(group.key);
+  const handleRejectRouting = async (group) => {
+    setActionKey(`routing-${group.key}`);
     setError('');
     setSuccess('');
     try {
@@ -105,16 +152,99 @@ function BloodBankReceivedRequestsPage() {
     <div className="hospital-requests blood-bank-requests">
       <PageHeader
         title="Received requests"
-        subtitle="Pending blood requests from users and hospitals — accept to assign a donor or reject."
+        subtitle="Hospital and user unit requests, plus donor routing requests from nearby users and hospitals."
       />
+
+      <div className="hospital-send-request__tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          className={`hospital-send-request__tab ${activeTab === 'units' ? 'hospital-send-request__tab--active' : ''}`}
+          onClick={() => setActiveTab('units')}
+        >
+          Blood unit requests ({unitRequests.length})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={`hospital-send-request__tab ${activeTab === 'routing' ? 'hospital-send-request__tab--active' : ''}`}
+          onClick={() => setActiveTab('routing')}
+        >
+          Donor routing ({groupedRoutingRequests.length})
+        </button>
+      </div>
 
       {error && <p className="hospital-requests__error">{error}</p>}
       {success && <p className="blood-bank-requests__success">{success}</p>}
 
       {loading ? (
         <p>Loading…</p>
-      ) : groupedRequests.length === 0 ? (
-        <p>No pending received requests.</p>
+      ) : activeTab === 'units' ? (
+        unitRequests.length === 0 ? (
+          <p>No pending blood unit requests from hospitals or users.</p>
+        ) : (
+          <div className="hospital-requests__table-wrap">
+            <table className="hospital-requests__table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>From</th>
+                  <th>Patient</th>
+                  <th>Blood</th>
+                  <th>Units</th>
+                  <th>Contact</th>
+                  <th>Emergency</th>
+                  <th>Required before</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unitRequests.map((r) => (
+                  <tr key={r.requestId}>
+                    <td>{r.requestId}</td>
+                    <td>{r.hospitalName}</td>
+                    <td>
+                      {r.patientName} ({r.patientAge}, {r.gender})
+                    </td>
+                    <td>{r.bloodGroup}</td>
+                    <td>{r.requiredUnits}</td>
+                    <td>{r.hospitalContact}</td>
+                    <td>{r.emergencyLevel}</td>
+                    <td>{formatDateTime(r.requiredBefore)}</td>
+                    <td>{HOSPITAL_BLOOD_BANK_REQUEST_STATUS_LABELS[r.status] || r.status}</td>
+                    <td className="blood-bank-requests__actions">
+                      {r.status === 'PENDING' ? (
+                        <>
+                          <button
+                            type="button"
+                            className="blood-bank-requests__approve"
+                            disabled={actionKey === `unit-${r.requestId}`}
+                            onClick={() => handleApproveUnit(r.requestId)}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="blood-bank-requests__reject"
+                            disabled={actionKey === `unit-${r.requestId}`}
+                            onClick={() => handleRejectUnit(r.requestId)}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : groupedRoutingRequests.length === 0 ? (
+        <p>No pending donor routing requests.</p>
       ) : (
         <div className="hospital-requests__table-wrap">
           <table className="hospital-requests__table">
@@ -132,7 +262,7 @@ function BloodBankReceivedRequestsPage() {
               </tr>
             </thead>
             <tbody>
-              {groupedRequests.map((group) => (
+              {groupedRoutingRequests.map((group) => (
                 <tr key={group.key}>
                   <td>{REQUESTER_TYPE_LABELS[group.requesterType] || group.requesterType}</td>
                   <td>{group.requesterName || '—'}</td>
@@ -150,16 +280,16 @@ function BloodBankReceivedRequestsPage() {
                     <button
                       type="button"
                       className="blood-bank-requests__approve"
-                      disabled={actionKey === group.key}
-                      onClick={() => handleAccept(group)}
+                      disabled={actionKey === `routing-${group.key}`}
+                      onClick={() => handleAcceptRouting(group)}
                     >
                       Accept
                     </button>
                     <button
                       type="button"
                       className="blood-bank-requests__reject"
-                      disabled={actionKey === group.key}
-                      onClick={() => handleReject(group)}
+                      disabled={actionKey === `routing-${group.key}`}
+                      onClick={() => handleRejectRouting(group)}
                     >
                       Reject
                     </button>

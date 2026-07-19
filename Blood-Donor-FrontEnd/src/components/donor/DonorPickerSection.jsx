@@ -28,7 +28,6 @@ function DonorPickerSection({
   disabled = false,
 }) {
   const [filters, setFilters] = useState({
-    search: '',
     bloodGroup: bloodGroup || 'O+',
     pincode: pincode || '',
     availability: 'All',
@@ -72,12 +71,9 @@ function DonorPickerSection({
     }
   }, [filters, liveLocation, onSelectionChange, pincode]);
 
-  const filteredDonors = useMemo(() => donors.filter((d) => {
-    const matchName = d.name.toLowerCase().includes(filters.search.toLowerCase());
-    const matchAvailability =
-      filters.availability === 'All' || d.availability === filters.availability;
-    return matchName && matchAvailability;
-  }), [donors, filters.search, filters.availability]);
+  const filteredDonors = useMemo(() => donors.filter((d) => (
+    filters.availability === 'All' || d.availability === filters.availability
+  )), [donors, filters.availability]);
 
   const selectableDonors = useMemo(
     () => filteredDonors.filter((d) => d.availability === 'Available'),
@@ -101,12 +97,10 @@ function DonorPickerSection({
   return (
     <section className="donor-picker">
       <DonorSearchFilters
-        search={filters.search}
         bloodGroup={filters.bloodGroup}
         pincode={filters.pincode}
         availability={filters.availability}
         radiusKm={filters.radiusKm}
-        onSearchChange={(v) => setFilters((p) => ({ ...p, search: v }))}
         onBloodGroupChange={(v) => setFilters((p) => ({ ...p, bloodGroup: v }))}
         onPincodeChange={(v) =>
           setFilters((p) => ({ ...p, pincode: v.replace(/\D/g, '').slice(0, 6) }))
@@ -115,7 +109,6 @@ function DonorPickerSection({
         onRadiusChange={(v) => setFilters((p) => ({ ...p, radiusKm: Number(v) }))}
         onReset={() => {
           setFilters({
-            search: '',
             bloodGroup: bloodGroup || 'O+',
             pincode: pincode || '',
             availability: 'All',

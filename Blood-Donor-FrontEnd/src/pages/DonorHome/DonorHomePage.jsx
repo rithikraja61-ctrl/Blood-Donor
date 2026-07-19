@@ -36,6 +36,17 @@ function DonorHomePage() {
     loadDashboard();
   }, [loadDashboard]);
 
+  useEffect(() => {
+    const refreshOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadDashboard();
+      }
+    };
+
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    return () => document.removeEventListener('visibilitychange', refreshOnFocus);
+  }, [loadDashboard]);
+
   const displayName = dashboard?.donorName || user?.name;
 
   return (

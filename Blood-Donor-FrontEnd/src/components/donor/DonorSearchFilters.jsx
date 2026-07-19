@@ -16,12 +16,10 @@ const RADIUS_OPTIONS = [
 ];
 
 function DonorSearchFilters({
-  search,
   bloodGroup,
   pincode,
   availability,
   radiusKm,
-  onSearchChange,
   onBloodGroupChange,
   onPincodeChange,
   onAvailabilityChange,
@@ -32,12 +30,6 @@ function DonorSearchFilters({
 }) {
   return (
     <section className="donor-filters" aria-label="Donor search filters">
-      <SearchInput
-        label="Search by name"
-        value={search}
-        onChange={onSearchChange}
-        placeholder="Donor name"
-      />
       <FilterSelect
         label="Blood group"
         value={bloodGroup}

@@ -200,7 +200,11 @@ function BloodRequestPage() {
           type="button"
           role="tab"
           className={`hospital-send-request__tab ${requestTab === 'donors' ? 'hospital-send-request__tab--active' : ''}`}
-          onClick={() => setRequestTab('donors')}
+          onClick={() => {
+            setRequestTab('donors');
+            setError('');
+            setSuccess(null);
+          }}
         >
           Send to donors
         </button>
@@ -208,9 +212,13 @@ function BloodRequestPage() {
           type="button"
           role="tab"
           className={`hospital-send-request__tab ${requestTab === 'bloodbank' ? 'hospital-send-request__tab--active' : ''}`}
-          onClick={() => setRequestTab('bloodbank')}
+          onClick={() => {
+            setRequestTab('bloodbank');
+            setError('');
+            setSuccess(null);
+          }}
         >
-          Request from blood bank
+          Send to blood bank
         </button>
       </div>
 

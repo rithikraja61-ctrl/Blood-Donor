@@ -38,6 +38,7 @@ import com.blooddonor.validation.TreatmentStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.ArrayList;
@@ -584,7 +585,8 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setUnitsOfBloodRequired(1);
         bloodRequest.setReasonForBloodRequirement(reason);
         bloodRequest.setHospitalName(user.getName());
-        bloodRequest.setHospitalAddress(user.getAddress());
+        bloodRequest.setHospitalAddress(
+                user.getAddress() != null && !user.getAddress().isBlank() ? user.getAddress() : "N/A");
         bloodRequest.setHospitalCity("");
         bloodRequest.setHospitalPinCode(user.getPincode());
         bloodRequest.setContactPersonName(request.getContactPersonName());
@@ -637,11 +639,16 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         request.setStatus(BloodRequestStatus.ACCEPTED);
         request.setRespondedAt(LocalDateTime.now());
 
+        Donor acceptingDonor = request.getDonor();
+        if (acceptingDonor != null) {
+            acceptingDonor.setLastDonationDate(LocalDate.now());
+            donorRepository.save(acceptingDonor);
+        }
+
         expireOtherPendingInGroup(request.getRequestGroupId(), request.getId());
 
         Patient patient = request.getPatient();
         if (patient != null) {
-            Donor acceptingDonor = request.getDonor();
             patient.setDonorAssigned(true);
             patient.setAssignedDonor(acceptingDonor);
             patient.setPatientRequestStatus(PatientRequestStatus.DONOR_RECEIVED);

@@ -9,5 +9,4 @@ class BloodDonorApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

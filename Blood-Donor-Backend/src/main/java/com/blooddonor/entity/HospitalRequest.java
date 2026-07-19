@@ -36,7 +36,7 @@ public class HospitalRequest {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hospital_id")
+    @JoinColumn(name = "hospital_id", nullable = true)
     private Hospital hospital;
 
     @ManyToOne(fetch = FetchType.LAZY)

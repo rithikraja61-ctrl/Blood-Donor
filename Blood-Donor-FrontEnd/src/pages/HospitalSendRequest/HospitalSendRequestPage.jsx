@@ -249,7 +249,7 @@ function HospitalSendRequestPage() {
           className={`hospital-send-request__tab ${requestTab === 'bloodbank' ? 'hospital-send-request__tab--active' : ''}`}
           onClick={() => setRequestTab('bloodbank')}
         >
-          Request from blood bank
+          Send to blood bank
         </button>
       </div>
 

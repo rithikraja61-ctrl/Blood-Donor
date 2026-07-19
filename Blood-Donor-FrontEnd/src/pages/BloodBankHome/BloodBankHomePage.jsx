@@ -31,6 +31,10 @@ function BloodBankHomePage() {
     loadDashboard();
   }, [loadDashboard]);
 
+  const pendingUnitRequests = dashboard?.hospitalRequestsPending ?? 0;
+  const pendingRoutingRequests = dashboard?.receivedRoutingRequestsPending ?? 0;
+  const totalReceivedPending = pendingUnitRequests + pendingRoutingRequests;
+
   const stats = dashboard
     ? [
         { label: 'Approved (hospital)', value: dashboard.totalBloodRequestsApproved, tone: 'success' },
@@ -63,12 +67,16 @@ function BloodBankHomePage() {
               <span className="blood-bank-home__request-icon" aria-hidden="true">📥</span>
               <div>
                 <h2>Received requests</h2>
-                <p>Blood requests from users and hospitals to nearby donors</p>
+                <p>Hospital and user unit requests, plus donor routing requests</p>
               </div>
               <div className="blood-bank-home__request-counts">
                 <div>
-                  <strong>{dashboard.receivedRoutingRequestsPending ?? 0}</strong>
+                  <strong>{totalReceivedPending}</strong>
                   <span>Pending</span>
+                </div>
+                <div>
+                  <strong>{pendingUnitRequests}</strong>
+                  <span>Unit requests</span>
                 </div>
               </div>
             </Link>

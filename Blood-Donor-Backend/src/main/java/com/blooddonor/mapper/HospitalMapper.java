@@ -6,7 +6,6 @@ import com.blooddonor.dto.response.HospitalResponse;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.validation.Role;
 import org.springframework.stereotype.Component;
-
 import java.util.Optional;
 
 @Component
