@@ -206,6 +206,11 @@ function HospitalSendRequestPage() {
       setError('Required-by date and time is required.');
       return;
     }
+    const requiredBeforeMs = new Date(bankForm.requiredBefore).getTime();
+    if (Number.isNaN(requiredBeforeMs) || requiredBeforeMs <= Date.now()) {
+      setError('Required-by date and time must be in the future.');
+      return;
+    }
 
     setSubmitLoading(true);
     try {
@@ -213,15 +218,18 @@ function HospitalSendRequestPage() {
         bloodBankId: Number(bankForm.bloodBankId),
         patientId: Number(patientId),
         emergencyLevel: bankForm.emergencyLevel,
-        requiredBefore: bankForm.requiredBefore.length === 16
-          ? `${bankForm.requiredBefore}:00`
-          : bankForm.requiredBefore,
+        requiredBefore: bankForm.requiredBefore,
         hospitalContact: bankForm.hospitalContact,
         reason: bankForm.reason.trim() || undefined,
       });
       setSuccess({ type: 'bloodbank', requestId: response.requestId });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to send blood bank request.');
+      if (err instanceof ApiError && err.fieldErrors) {
+        const detail = Object.values(err.fieldErrors).join(' ');
+        setError(detail || err.message);
+      } else {
+        setError(err instanceof ApiError ? err.message : 'Failed to send blood bank request.');
+      }
     } finally {
       setSubmitLoading(false);
     }

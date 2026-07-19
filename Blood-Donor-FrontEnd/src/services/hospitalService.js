@@ -1,5 +1,10 @@
 import { apiRequest } from './apiClient';
 
+function toApiDateTime(value) {
+  if (!value) return value;
+  return value.length === 16 ? `${value}:00` : value;
+}
+
 export async function getHospitalProfile() {
   const res = await apiRequest('/hospitals/me');
   return res.data;
@@ -56,7 +61,10 @@ export async function listBloodBanks() {
 export async function sendBloodBankRequest(payload) {
   const res = await apiRequest('/hospitals/blood-bank-requests', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      requiredBefore: toApiDateTime(payload.requiredBefore),
+    }),
   });
   return res.data;
 }

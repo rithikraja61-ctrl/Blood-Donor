@@ -1,7 +1,6 @@
 package com.blooddonor.dto.request;
 
 import com.blooddonor.validation.EmergencyLevel;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -25,7 +24,6 @@ public class CreateHospitalRequestDto {
     private EmergencyLevel emergencyLevel;
 
     @NotNull(message = "Required before date is required")
-    @Future(message = "Required before date must be in the future")
     private LocalDateTime requiredBefore;
 
     @NotBlank(message = "Hospital contact is required")

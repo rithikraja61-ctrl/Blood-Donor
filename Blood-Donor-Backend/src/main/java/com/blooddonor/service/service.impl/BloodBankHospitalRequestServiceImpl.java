@@ -79,9 +79,9 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         BloodBank bloodBank = bloodBankRepository.findById(request.getBloodBankId())
                 .orElseThrow(() -> new BloodBankNotFoundException("Blood bank not found"));
 
-        String reason = request.getReason() != null && !request.getReason().isBlank()
-                ? request.getReason().trim()
-                : patient.getReasonForBlood();
+        validateRequiredBefore(request.getRequiredBefore());
+
+        String reason = resolveReason(request.getReason(), patient.getReasonForBlood());
 
         HospitalRequest hospitalRequest = new HospitalRequest();
         hospitalRequest.setHospital(hospital);
@@ -115,9 +115,9 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         BloodBank bloodBank = bloodBankRepository.findById(request.getBloodBankId())
                 .orElseThrow(() -> new BloodBankNotFoundException("Blood bank not found"));
 
-        String reason = request.getReason() != null && !request.getReason().isBlank()
-                ? request.getReason().trim()
-                : "Blood required";
+        validateRequiredBefore(request.getRequiredBefore());
+
+        String reason = resolveReason(request.getReason(), "Blood required");
 
         HospitalRequest hospitalRequest = new HospitalRequest();
         hospitalRequest.setUser(user);
@@ -261,5 +261,24 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         Long userId = securityUtil.getCurrentUserId();
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    private void validateRequiredBefore(LocalDateTime requiredBefore) {
+        if (requiredBefore == null) {
+            throw new BadRequestException("Required before date is required");
+        }
+        if (!requiredBefore.isAfter(LocalDateTime.now())) {
+            throw new BadRequestException("Required before date must be in the future");
+        }
+    }
+
+    private String resolveReason(String requestReason, String fallbackReason) {
+        if (requestReason != null && !requestReason.isBlank()) {
+            return requestReason.trim();
+        }
+        if (fallbackReason != null && !fallbackReason.isBlank()) {
+            return fallbackReason.trim();
+        }
+        return "Blood required";
     }
 }
