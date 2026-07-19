@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
 import CommonInput from '../../components/auth/CommonInput';
 import {
@@ -9,6 +10,7 @@ import { ApiError } from '../../services/apiClient';
 import LocationSelector from '../../components/map/LocationSelector';
 import { locationFromFormFields, applyLocationToFormFields } from '../../utils/locationUtils';
 import { useAuth } from '../../context/AuthContext';
+import { ROUTES } from '../../utils/constants';
 import '../DonorProfile/DonorProfilePage.css';
 import './BloodBankProfilePage.css';
 
@@ -29,10 +31,10 @@ function mapProfileToForm(data, fallbackName = '') {
 }
 
 function BloodBankProfilePage() {
+  const navigate = useNavigate();
   const { user, syncProfile } = useAuth();
   const [form, setForm] = useState(() => mapProfileToForm(null, user?.name || ''));
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
   const [locationError, setLocationError] = useState('');
 
@@ -57,7 +59,6 @@ function BloodBankProfilePage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setSuccess('');
   };
 
   const handleSubmit = async (e) => {
@@ -68,7 +69,6 @@ function BloodBankProfilePage() {
     }
     setSaving(true);
     setError('');
-    setSuccess('');
     setLocationError('');
     try {
       const updated = await updateBloodBankProfile({
@@ -89,8 +89,7 @@ function BloodBankProfilePage() {
         name: updated.bloodBankName || updated.name,
         pincode: updated.pinCode || updated.pincode,
       });
-      setForm(mapProfileToForm(updated, form.name));
-      setSuccess('Profile updated successfully.');
+      navigate(ROUTES.BLOOD_BANK_HOME, { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to update profile.');
     } finally {
@@ -113,7 +112,6 @@ function BloodBankProfilePage() {
       </section>
 
       {error && <p className="donor-profile-page__error">{error}</p>}
-      {success && <p style={{ color: 'var(--color-success, #0a7)' }}>{success}</p>}
 
       <form className="donor-profile-page__card" onSubmit={handleSubmit}>
         <CommonInput id="name" label="Blood bank name" name="name" value={form.name} onChange={handleChange} />
