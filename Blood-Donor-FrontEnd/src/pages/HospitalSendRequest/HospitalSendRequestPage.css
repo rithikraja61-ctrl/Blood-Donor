@@ -55,3 +55,49 @@
   color: #0a7;
   font-weight: 500;
 }
+
+.hospital-send-request__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.hospital-send-request__tab {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--landing-border, #ddd);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.hospital-send-request__tab--active {
+  background: var(--color-blood-red, #c0392b);
+  color: #fff;
+  border-color: transparent;
+}
+
+.donor-picker__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.donor-picker__selected-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--landing-text-muted, #666);
+}
+
+.donor-picker__list {
+  margin-top: 1rem;
+}
+
+.hospital-send-request__send-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}

@@ -1,8 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/Login/LoginPage';
 import RegisterPage from '../pages/Register/RegisterPage';
-import FindDonorPage from '../pages/FindDonor/FindDonorPage';
 import ProfilePage from '../pages/Profile/ProfilePage';
 import UserHomePage from '../pages/UserHome/UserHomePage';
 import BloodRequestPage from '../pages/BloodRequest/BloodRequestPage';
@@ -14,7 +13,7 @@ import UserModuleLayout from '../layouts/UserModuleLayout';
 import DonorModuleLayout from '../layouts/DonorModuleLayout';
 import HospitalModuleLayout from '../layouts/HospitalModuleLayout';
 import ProtectedRoute from './ProtectedRoute';
-import { ROLES } from '../utils/constants';
+import { ROLES, ROUTES } from '../utils/constants';
 import HospitalHomePage from '../pages/HospitalHome/HospitalHomePage';
 import HospitalProfilePage from '../pages/HospitalProfile/HospitalProfilePage';
 import HospitalPatientsPage from '../pages/HospitalPatients/HospitalPatientsPage';
@@ -44,7 +43,7 @@ function AppRoutes() {
         )}
       >
         <Route path="/user-home" element={<UserHomePage />} />
-        <Route path="/find-donor" element={<FindDonorPage />} />
+        <Route path="/find-donor" element={<Navigate to={ROUTES.REQUEST_BLOOD} replace />} />
         <Route path="/request-blood" element={<BloodRequestPage />} />
         <Route path="/my-requests" element={<MyRequestsPage />} />
         <Route path="/profile" element={<ProfilePage />} />

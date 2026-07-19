@@ -1,12 +1,14 @@
 package com.blooddonor.service.impl;
 
 import com.blooddonor.dto.request.CreateHospitalRequestDto;
+import com.blooddonor.dto.request.UserBloodBankRequestDto;
 import com.blooddonor.dto.response.HospitalRequestResponse;
 import com.blooddonor.entity.BloodBank;
 import com.blooddonor.entity.BloodIssue;
 import com.blooddonor.entity.Hospital;
 import com.blooddonor.entity.HospitalRequest;
 import com.blooddonor.entity.Patient;
+import com.blooddonor.entity.User;
 import com.blooddonor.exception.BadRequestException;
 import com.blooddonor.exception.BloodBankNotFoundException;
 import com.blooddonor.exception.RequestAlreadyProcessedException;
@@ -17,12 +19,13 @@ import com.blooddonor.repository.BloodIssueRepository;
 import com.blooddonor.repository.HospitalRepository;
 import com.blooddonor.repository.HospitalRequestRepository;
 import com.blooddonor.repository.PatientRepository;
+import com.blooddonor.repository.UserRepository;
 import com.blooddonor.service.BloodBankHospitalRequestService;
 import com.blooddonor.service.BloodBankInventoryService;
 import com.blooddonor.service.HospitalNotificationService;
 import com.blooddonor.util.SecurityUtil;
 import com.blooddonor.validation.BloodIssueStatus;
-import com.blooddonor.validation.EmergencyLevel;
+import com.blooddonor.validation.Gender;
 import com.blooddonor.validation.HospitalRequestStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
     private final HospitalRequestRepository hospitalRequestRepository;
     private final HospitalRepository hospitalRepository;
     private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
     private final BloodBankRepository bloodBankRepository;
     private final BloodIssueRepository bloodIssueRepository;
     private final BloodBankInventoryService bloodBankInventoryService;
@@ -47,6 +51,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
             HospitalRequestRepository hospitalRequestRepository,
             HospitalRepository hospitalRepository,
             PatientRepository patientRepository,
+            UserRepository userRepository,
             BloodBankRepository bloodBankRepository,
             BloodIssueRepository bloodIssueRepository,
             BloodBankInventoryService bloodBankInventoryService,
@@ -56,6 +61,7 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         this.hospitalRequestRepository = hospitalRequestRepository;
         this.hospitalRepository = hospitalRepository;
         this.patientRepository = patientRepository;
+        this.userRepository = userRepository;
         this.bloodBankRepository = bloodBankRepository;
         this.bloodIssueRepository = bloodIssueRepository;
         this.bloodBankInventoryService = bloodBankInventoryService;
@@ -90,6 +96,42 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         hospitalRequest.setReason(reason);
         hospitalRequest.setRequiredBefore(request.getRequiredBefore());
         hospitalRequest.setHospitalContact(request.getHospitalContact());
+        hospitalRequest.setStatus(HospitalRequestStatus.PENDING);
+
+        HospitalRequest saved = hospitalRequestRepository.save(hospitalRequest);
+        hospitalNotificationService.notifyBloodBankNewHospitalRequest(bloodBank.getId(), saved.getId());
+        return bloodBankModuleMapper.toHospitalRequestResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public HospitalRequestResponse createRequestFromUser(UserBloodBankRequestDto request) {
+        User user = findCurrentUser();
+
+        if (user.getBloodType() == null) {
+            throw new BadRequestException("Blood group is required on your profile before requesting from a blood bank");
+        }
+
+        BloodBank bloodBank = bloodBankRepository.findById(request.getBloodBankId())
+                .orElseThrow(() -> new BloodBankNotFoundException("Blood bank not found"));
+
+        String reason = request.getReason() != null && !request.getReason().isBlank()
+                ? request.getReason().trim()
+                : "Blood required";
+
+        HospitalRequest hospitalRequest = new HospitalRequest();
+        hospitalRequest.setUser(user);
+        hospitalRequest.setBloodBank(bloodBank);
+        hospitalRequest.setHospitalName(user.getName());
+        hospitalRequest.setPatientName(user.getName());
+        hospitalRequest.setPatientAge(0);
+        hospitalRequest.setGender(Gender.OTHER);
+        hospitalRequest.setBloodGroup(user.getBloodType());
+        hospitalRequest.setRequiredUnits(request.getRequiredUnits());
+        hospitalRequest.setEmergencyLevel(request.getEmergencyLevel());
+        hospitalRequest.setReason(reason);
+        hospitalRequest.setRequiredBefore(request.getRequiredBefore());
+        hospitalRequest.setHospitalContact(request.getContactPhoneNumber());
         hospitalRequest.setStatus(HospitalRequestStatus.PENDING);
 
         HospitalRequest saved = hospitalRequestRepository.save(hospitalRequest);
@@ -146,8 +188,10 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         issue.setStatus(BloodIssueStatus.ISSUED);
         bloodIssueRepository.save(issue);
 
-        hospitalNotificationService.notifyHospitalRequestApproved(
-                request.getHospital().getId(), request.getId());
+        if (request.getHospital() != null) {
+            hospitalNotificationService.notifyHospitalRequestApproved(
+                    request.getHospital().getId(), request.getId());
+        }
 
         return bloodBankModuleMapper.toHospitalRequestResponse(savedRequest);
     }
@@ -163,8 +207,10 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         request.setProcessedAt(LocalDateTime.now());
         HospitalRequest saved = hospitalRequestRepository.save(request);
 
-        hospitalNotificationService.notifyHospitalRequestRejected(
-                request.getHospital().getId(), request.getId(), "Request rejected by blood bank");
+        if (request.getHospital() != null) {
+            hospitalNotificationService.notifyHospitalRequestRejected(
+                    request.getHospital().getId(), request.getId(), "Request rejected by blood bank");
+        }
 
         return bloodBankModuleMapper.toHospitalRequestResponse(saved);
     }
@@ -209,5 +255,11 @@ public class BloodBankHospitalRequestServiceImpl implements BloodBankHospitalReq
         Long hospitalId = securityUtil.getCurrentUserId();
         return hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hospital not found"));
+    }
+
+    private User findCurrentUser() {
+        Long userId = securityUtil.getCurrentUserId();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }
