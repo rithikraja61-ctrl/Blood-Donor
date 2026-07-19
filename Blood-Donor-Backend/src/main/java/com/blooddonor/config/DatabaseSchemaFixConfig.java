@@ -21,6 +21,17 @@ public class DatabaseSchemaFixConfig implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         allowNullHospitalIdOnUserRequests();
+        expandBloodRequestRequesterType();
+    }
+
+    private void expandBloodRequestRequesterType() {
+        try {
+            jdbcTemplate.execute(
+                    "ALTER TABLE blood_requests MODIFY COLUMN requester_type VARCHAR(20) NOT NULL");
+            log.info("Ensured blood_requests.requester_type accepts BLOOD_BANK requester values");
+        } catch (Exception ex) {
+            log.warn("Could not update blood_requests.requester_type column: {}", ex.getMessage());
+        }
     }
 
     private void allowNullHospitalIdOnUserRequests() {
