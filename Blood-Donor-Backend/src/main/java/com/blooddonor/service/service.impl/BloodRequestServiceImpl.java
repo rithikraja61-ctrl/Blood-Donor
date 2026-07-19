@@ -254,9 +254,12 @@ public class BloodRequestServiceImpl implements BloodRequestService {
         bloodRequest.setRequiredBloodGroup(request.getBloodType());
         bloodRequest.setUnitsOfBloodRequired(1);
         bloodRequest.setReasonForBloodRequirement(reason);
-        bloodRequest.setHospitalName(bloodBank.getName());
-        bloodRequest.setHospitalAddress(bloodBank.getAddress());
-        bloodRequest.setHospitalCity(bloodBank.getCity());
+        bloodRequest.setHospitalName(
+                bloodBank.getName() != null && !bloodBank.getName().isBlank() ? bloodBank.getName() : "Blood bank");
+        bloodRequest.setHospitalAddress(
+                bloodBank.getAddress() != null && !bloodBank.getAddress().isBlank() ? bloodBank.getAddress() : "N/A");
+        bloodRequest.setHospitalCity(
+                bloodBank.getCity() != null && !bloodBank.getCity().isBlank() ? bloodBank.getCity() : "N/A");
         bloodRequest.setHospitalPinCode(bloodBank.getPincode());
         bloodRequest.setContactPersonName(request.getContactPersonName());
         bloodRequest.setContactPhoneNumber(request.getContactPhoneNumber());

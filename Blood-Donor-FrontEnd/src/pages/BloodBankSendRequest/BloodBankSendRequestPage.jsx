@@ -130,7 +130,19 @@ function BloodBankSendRequestPage() {
       }));
       await loadSent();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to send request.');
+      if (err instanceof ApiError) {
+        const fieldMsg = err.fieldErrors
+          ? Object.values(err.fieldErrors).find(Boolean)
+          : null;
+        const message = fieldMsg || err.message;
+        setError(
+          message === 'No eligible donors found nearby'
+            ? 'No eligible donors found nearby for this blood group. Try a compatible group (e.g. A+ if O+ donors are unavailable) or add donors in this area.'
+            : message,
+        );
+      } else {
+        setError('Failed to send request.');
+      }
     } finally {
       setLoading(false);
     }

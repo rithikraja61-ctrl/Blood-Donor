@@ -1,6 +1,7 @@
 package com.blooddonor.validation;
 
 import com.blooddonor.exception.BadRequestException;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum BloodType {
     A_POSITIVE,
@@ -41,5 +42,14 @@ public enum BloodType {
             case "O-", "O_NEGATIVE" -> O_NEGATIVE;
             default -> throw new BadRequestException("Invalid blood group: " + value);
         };
+    }
+
+    @JsonCreator
+    public static BloodType fromJson(String value) {
+        try {
+            return fromDisplay(value);
+        } catch (BadRequestException ex) {
+            throw new IllegalArgumentException(ex.getMessage());
+        }
     }
 }
